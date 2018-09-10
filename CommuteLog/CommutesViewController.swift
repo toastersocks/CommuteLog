@@ -54,6 +54,10 @@ class CommutesViewController: UIViewController {
         view.backgroundColor = .white
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
+    }
 }
 
 extension CommutesViewController: UITableViewDataSource {
