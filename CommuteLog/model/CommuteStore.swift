@@ -12,7 +12,11 @@ protocol CommuteStore {
     func save(commute: Commute)
     func loadCommutes() -> [Commute]
     func save(commutes: [Commute])
-    
+
+    func saveActiveCommute(_ commute: Commute)
+    func loadActiveCommute() -> Commute?
+    func removeActiveCommute() -> Commute?
+
     @discardableResult
     func delete(commute: Commute) -> Int?
 }
@@ -46,6 +50,24 @@ extension CommuteStore {
 }
 
 extension UserDefaults: CommuteStore {
+    func saveActiveCommute(_ commute: Commute) {
+        let encoder = JSONEncoder()
+        set(try! encoder.encode(commute), forKey: "activeCommute")
+    }
+
+    func loadActiveCommute() -> Commute? {
+        guard let commuteData = value(forKey: "activeCommute") as? Data else { return nil }
+
+        let decoder = JSONDecoder()
+        return try? decoder.decode(Commute.self, from: commuteData)
+    }
+
+    func removeActiveCommute() -> Commute? {
+        guard let active = loadActiveCommute() else { return nil }
+        active.end = Date()
+        return active
+    }
+
     func loadCommutes() -> [Commute] {
         guard let commutesData = value(forKey: "commutes") as? Data else { return [] }
 
