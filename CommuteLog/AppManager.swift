@@ -69,6 +69,7 @@ extension AppManager: CommuteDelegate {
             commutes.append(active)
         }
         commuteViewController.commutes = commutes
+        Logger.debug("Starting location tracking for commute: \(startedCommute)")
         locationManager.startUpdatingLocation()
     }
 
@@ -101,14 +102,20 @@ extension AppManager: CommutesViewControllerEventHandler {
 
 extension AppManager: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
+        Logger.debug("Exited region \(region.identifier)")
         commuteManager.exitedRegion(region.identifier)
     }
 
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+        Logger.debug("Entered region \(region.identifier)")
         commuteManager.enteredRegion(region.identifier)
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        Logger.debug("Updated \(locations.count) locations")
+        for location in locations {
+            Logger.verbose("   \(location)")
+        }
         for location in locations {
             commuteManager.processLocation(Location(location: location))
         }

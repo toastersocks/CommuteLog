@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		F90062F42146269600036AFF /* CommuteEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = F90062F32146269600036AFF /* CommuteEndpoint.swift */; };
 		F90062F6214626CF00036AFF /* CommuteSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = F90062F5214626CF00036AFF /* CommuteSchedule.swift */; };
+		F906A23521474702007097F5 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F906A23421474702007097F5 /* Logger.swift */; };
 		F98F768121292178000AFF7B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98F768021292178000AFF7B /* AppDelegate.swift */; };
 		F98F768321292178000AFF7B /* CommutesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98F768221292178000AFF7B /* CommutesViewController.swift */; };
 		F98F76882129217B000AFF7B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F98F76872129217B000AFF7B /* Assets.xcassets */; };
@@ -35,6 +36,7 @@
 /* Begin PBXFileReference section */
 		F90062F32146269600036AFF /* CommuteEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommuteEndpoint.swift; sourceTree = "<group>"; };
 		F90062F5214626CF00036AFF /* CommuteSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommuteSchedule.swift; sourceTree = "<group>"; };
+		F906A23421474702007097F5 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		F98F767D21292178000AFF7B /* CommuteLog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CommuteLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F98F768021292178000AFF7B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F98F768221292178000AFF7B /* CommutesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommutesViewController.swift; sourceTree = "<group>"; };
@@ -70,6 +72,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F906A233214746EE007097F5 /* util */ = {
+			isa = PBXGroup;
+			children = (
+				F906A23421474702007097F5 /* Logger.swift */,
+			);
+			path = util;
+			sourceTree = "<group>";
+		};
 		F98F767421292178000AFF7B = {
 			isa = PBXGroup;
 			children = (
@@ -91,6 +101,7 @@
 		F98F767F21292178000AFF7B /* CommuteLog */ = {
 			isa = PBXGroup;
 			children = (
+				F906A233214746EE007097F5 /* util */,
 				F98F76D12129C822000AFF7B /* model */,
 				F98F768021292178000AFF7B /* AppDelegate.swift */,
 				F98F76CD2129B612000AFF7B /* AppManager.swift */,
@@ -226,6 +237,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F98F76D02129B656000AFF7B /* CommuteManager.swift in Sources */,
+				F906A23521474702007097F5 /* Logger.swift in Sources */,
 				F90062F6214626CF00036AFF /* CommuteSchedule.swift in Sources */,
 				F98F76D72129C890000AFF7B /* CommuteStore.swift in Sources */,
 				F98F76CE2129B612000AFF7B /* AppManager.swift in Sources */,

@@ -35,7 +35,7 @@ class CommuteManager {
 
     func processLocation(_ location: Location) {
         guard let commute = activeCommute else {
-            print("Got location \(location) without activeCommute")
+            Logger.warning("Got location \(location) without activeCommute")
             return
         }
         commute.locations.append(location)
@@ -44,8 +44,14 @@ class CommuteManager {
     }
 
     func enteredRegion(_ identifier: String) {
-        guard let endpoint = endpoints.first(where: { $0.identifier == identifier }) else { return }
-        guard endpoint.entryWindow.isActive else { return }
+        guard let endpoint = endpoints.first(where: { $0.identifier == identifier }) else {
+            Logger.debug("Ignoring unknown region.")
+            return
+        }
+        guard endpoint.entryWindow.isActive else {
+            Logger.debug("Ignoring inactive region.")
+            return
+        }
 
         let commute = Commute(start: Date())
         _cachedActiveCommute = commute
@@ -54,8 +60,14 @@ class CommuteManager {
     }
 
     func exitedRegion(_ identifier: String) {
-        guard let endpoint = endpoints.first(where: { $0.identifier == identifier }) else { return }
-        guard endpoint.exitWindow.isActive else { return }
+        guard let endpoint = endpoints.first(where: { $0.identifier == identifier }) else {
+            Logger.debug("Ignoring unknown region.")
+            return
+        }
+        guard endpoint.exitWindow.isActive else {
+            Logger.debug("Ignoring inactive region.")
+            return
+        }
 
         guard let commute = store.removeActiveCommute() else { return }
         _cachedActiveCommute = nil
