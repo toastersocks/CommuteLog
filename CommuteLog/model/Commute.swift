@@ -20,7 +20,7 @@ final class Commute: Codable {
     }
 
     var isActive: Bool {
-        return end == nil && abs(start.timeIntervalSinceNow) < twelveHours
+        return end == nil
     }
 
     init(start: Date) {

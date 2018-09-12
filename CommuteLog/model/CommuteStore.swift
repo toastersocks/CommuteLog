@@ -15,6 +15,7 @@ protocol CommuteStore {
 
     func saveActiveCommute(_ commute: Commute)
     func loadActiveCommute() -> Commute?
+    @discardableResult
     func removeActiveCommute() -> Commute?
 
     @discardableResult

@@ -23,8 +23,8 @@ class AppManager: NSObject {
         self.commuteManager = CommuteManager(
             store: commuteStore,
             endPoints: [
-                CommuteEndPoint(identifier: "home", entryHours: 16...21, exitHours: 6...10, location: Location(latitude: 45.4462, longitude: -122.5869), radius: 20),
-                CommuteEndPoint(identifier: "work", entryHours: 7...11, exitHours: 15...20, location: Location(latitude: 45.5205, longitude: -122.6739), radius: 50)
+                CommuteEndPoint(identifier: "home", entryHours: 16...21, exitHours: 6...10, location: Location(latitude: 45.446263, longitude: -122.587414), radius: 50),
+                CommuteEndPoint(identifier: "work", entryHours: 7...11, exitHours: 15...20, location: Location(latitude: 45.520645, longitude: -122.673128), radius: 50)
             ]
         )
         self.window = UIWindow(frame: UIScreen.main.bounds)
@@ -42,14 +42,13 @@ class AppManager: NSObject {
 
         locationManager.activityType = .other
         locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-        locationManager.distanceFilter = 100
+        locationManager.distanceFilter = 75
 
         locationManager.requestAlwaysAuthorization()
 
         for endpoint in commuteManager.endpoints {
             locationManager.startMonitoring(for: endpoint.region)
         }
-        locationManager.startMonitoringSignificantLocationChanges()
     }
 
     func startUp() {
@@ -95,7 +94,12 @@ extension AppManager: CommutesViewControllerEventHandler {
     }
 
     func commutesViewController(_ vc: CommutesViewController, didDelete commute: Commute) {
-        commuteManager.store.delete(commute: commute)
+        if commute.isActive {
+            commuteManager.store.removeActiveCommute()
+        } else {
+            commuteManager.store.delete(commute: commute)
+        }
+        
         commuteViewController.commutes = commuteManager.store.loadCommutes()
     }
 }
