@@ -29,8 +29,8 @@ final class Commute: Codable {
         return end == nil
     }
 
-    init(start: Date, from beginning: CommuteEndPoint, to end: CommuteEndPoint) {
+    init(identifier: String? = nil, start: Date, from beginning: CommuteEndPoint, to end: CommuteEndPoint) {
         self.start = start
-        identifier = "\(beginning.identifier) -> \(end.identifier) \(formatter.string(from: start))"
+        self.identifier = identifier ?? "\(beginning.identifier) -> \(end.identifier) \(formatter.string(from: start))"
     }
 }

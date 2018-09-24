@@ -102,7 +102,7 @@ extension AppManager: CommutesViewControllerEventHandler {
         if commuteManager.activeCommute != nil {
             commuteManager.endCommute(save: true)
         }
-        commuteManager.startCommute(from: commuteManager.home.exitWindow.isActive ? commuteManager.home : commuteManager.work)
+        commuteManager.startCommute(from: commuteManager.home.exitWindow.contains(Date()) ? commuteManager.home : commuteManager.work)
     }
 
     func endCommute(for vc: CommutesViewController) {

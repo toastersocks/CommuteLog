@@ -38,9 +38,9 @@ class CommuteManager {
     func processLocation(_ location: Location) {
         if activeCommute == nil {
             Logger.debug("Got location update without an activeCommute.")
-            if home.exitWindow.isActive || work.entryWindow.isActive {
+            if home.exitWindow.contains(location.timestamp) || work.entryWindow.contains(location.timestamp) {
                 startCommute(from: home)
-            } else if home.entryWindow.isActive || work.exitWindow.isActive {
+            } else if home.entryWindow.contains(location.timestamp) || work.exitWindow.contains(location.timestamp) {
                 startCommute(from: work)
             }
         }
@@ -55,9 +55,9 @@ class CommuteManager {
         delegate?.commuteManager(self, updatedCommute: commute)
     }
 
-    func enteredRegion(_ identifier: String) {
+    func enteredRegion(_ identifier: String, at date: Date = Date()) {
         let endpoint = identifier == home.identifier ? home : work
-        guard endpoint.entryWindow.isActive else {
+        guard endpoint.entryWindow.contains(date) else {
             Logger.debug("Ignoring inactive region.")
             return
         }
@@ -65,9 +65,9 @@ class CommuteManager {
         endCommute(save: true)
     }
 
-    func exitedRegion(_ identifier: String) {
+    func exitedRegion(_ identifier: String, at date: Date = Date()) {
         let endpoint = identifier == home.identifier ? home : work
-        guard endpoint.exitWindow.isActive else {
+        guard endpoint.exitWindow.contains(date) else {
             Logger.debug("Ignoring inactive region.")
             return
         }
@@ -84,7 +84,7 @@ class CommuteManager {
     }
 
     func endCommute(save: Bool) {
-        guard let commute = store.commute(identifier: "active") else { return }
+        guard let commute = activeCommute else { return }
         _cachedActiveCommute = nil
 
         commute.end = Date()

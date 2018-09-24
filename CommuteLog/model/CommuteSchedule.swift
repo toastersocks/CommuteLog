@@ -13,7 +13,6 @@ struct CommuteSchedule: Codable {
     let endHour: Int
 
     var hours: Range<Int> { return startHour..<endHour }
-    var isActive: Bool { return contains(Date()) }
 
     func contains(_ date: Date) -> Bool {
         guard !Calendar.current.isDateInWeekend(date) else { return false }
