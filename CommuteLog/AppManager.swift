@@ -126,7 +126,7 @@ extension AppManager: CLLocationManagerDelegate {
         for location in locations {
             Logger.verbose("   \(location)")
         }
-        for location in locations.filter({ $0.horizontalAccuracy < 25 }) {
+        for location in locations.filter({ $0.horizontalAccuracy < 50 }) {
             commuteManager.processLocation(Location(location: location))
         }
     }
