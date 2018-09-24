@@ -22,10 +22,8 @@ class AppManager: NSObject {
         self.commuteStore = UserDefaults.standard
         self.commuteManager = CommuteManager(
             store: commuteStore,
-            endPoints: [
-                CommuteEndPoint(identifier: "home", entryHours: 16...21, exitHours: 6...10, location: Location(latitude: 45.446263, longitude: -122.587414), radius: 50),
-                CommuteEndPoint(identifier: "work", entryHours: 7...11, exitHours: 15...20, location: Location(latitude: 45.520645, longitude: -122.673128), radius: 50)
-            ]
+            home: CommuteEndPoint(identifier: "home", entryHours: 16..<21, exitHours: 6..<10, location: Location(latitude: 45.446263, longitude: -122.587414), radius: 50),
+            work: CommuteEndPoint(identifier: "work", entryHours: 7..<11, exitHours: 15..<20, location: Location(latitude: 45.520645, longitude: -122.673128), radius: 50)
         )
         self.window = UIWindow(frame: UIScreen.main.bounds)
         self.commuteViewController = CommutesViewController()
@@ -38,17 +36,25 @@ class AppManager: NSObject {
     }
 
     func setupLocationManager() {
+        Logger.debug("Setting up Location Manager")
         locationManager.delegate = self
 
         locationManager.activityType = .other
         locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-        locationManager.distanceFilter = 75
+        locationManager.distanceFilter = 100
+        locationManager.showsBackgroundLocationIndicator = true
+        locationManager.pausesLocationUpdatesAutomatically = false
 
         locationManager.requestAlwaysAuthorization()
 
-        for endpoint in commuteManager.endpoints {
+        for endpoint in [commuteManager.home, commuteManager.work] {
             locationManager.startMonitoring(for: endpoint.region)
         }
+
+        if let _ = commuteManager.activeCommute {
+            locationManager.startUpdatingLocation()
+        }
+        locationManager.startMonitoringSignificantLocationChanges()
     }
 
     func startUp() {
@@ -56,33 +62,26 @@ class AppManager: NSObject {
         window.makeKeyAndVisible()
 
         setupLocationManager()
-        commuteViewController.commutes = commuteManager.store.loadCommutes()
+        commuteViewController.commutes = commuteManager.fetchCommutes()
         commuteViewController.eventHandler = self
     }
 }
 
 extension AppManager: CommuteDelegate {
     func commuteManager(_ manager: CommuteManager, startedCommute: Commute) {
-        var commutes = manager.store.loadCommutes()
-        if let active = manager.activeCommute {
-            commutes.append(active)
-        }
-        commuteViewController.commutes = commutes
-        Logger.debug("Starting location tracking for commute: \(startedCommute)")
+        commuteViewController.commutes = manager.fetchCommutes()
+        Logger.debug("Starting location tracking for commute.")
         locationManager.startUpdatingLocation()
     }
 
     func commuteManager(_ manager: CommuteManager, updatedCommute: Commute) {
-        var commutes = manager.store.loadCommutes()
-        if let active = manager.activeCommute {
-            commutes.append(active)
-        }
-        commuteViewController.commutes = commutes
+        commuteViewController.commutes = manager.fetchCommutes()
         locationManager.startUpdatingLocation()
     }
 
     func commuteManager(_ manager: CommuteManager, endedCommute: Commute) {
-        commuteViewController.commutes = manager.store.loadCommutes()
+        commuteViewController.commutes = manager.fetchCommutes()
+        Logger.debug("Stopping location tracking due to commute end.")
         locationManager.stopUpdatingLocation()
     }
 }
@@ -94,13 +93,20 @@ extension AppManager: CommutesViewControllerEventHandler {
     }
 
     func commutesViewController(_ vc: CommutesViewController, didDelete commute: Commute) {
-        if commute.isActive {
-            commuteManager.store.removeActiveCommute()
-        } else {
-            commuteManager.store.delete(commute: commute)
-        }
+        commuteManager.delete(commute)
         
-        commuteViewController.commutes = commuteManager.store.loadCommutes()
+        commuteViewController.commutes = commuteManager.fetchCommutes()
+    }
+    
+    func startCommute(for vc: CommutesViewController) {
+        if commuteManager.activeCommute != nil {
+            commuteManager.endCommute(save: true)
+        }
+        commuteManager.startCommute(from: commuteManager.home.exitWindow.isActive ? commuteManager.home : commuteManager.work)
+    }
+
+    func endCommute(for vc: CommutesViewController) {
+        commuteManager.endCommute(save: true)
     }
 }
 
@@ -116,11 +122,11 @@ extension AppManager: CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        Logger.debug("Updated \(locations.count) locations")
+        Logger.debug("Received \(locations.count) locations")
         for location in locations {
             Logger.verbose("   \(location)")
         }
-        for location in locations {
+        for location in locations.filter({ $0.horizontalAccuracy < 25 }) {
             commuteManager.processLocation(Location(location: location))
         }
     }

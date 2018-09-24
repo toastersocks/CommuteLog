@@ -8,8 +8,14 @@
 
 import Foundation
 
-private let twelveHours = TimeInterval(12 * 60 * 60)
+private let formatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    return formatter
+}()
+
 final class Commute: Codable {
+    var identifier: String
     var start: Date
     var end: Date?
     var locations: [Location] = []
@@ -23,7 +29,8 @@ final class Commute: Codable {
         return end == nil
     }
 
-    init(start: Date) {
+    init(start: Date, from beginning: CommuteEndPoint, to end: CommuteEndPoint) {
         self.start = start
+        identifier = "\(beginning.identifier) -> \(end.identifier) \(formatter.string(from: start))"
     }
 }

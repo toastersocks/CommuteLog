@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct CommuteEndPoint {
+struct CommuteEndPoint: Codable {
     let identifier: String
     var entryWindow: CommuteSchedule
     var exitWindow: CommuteSchedule
@@ -17,7 +17,7 @@ struct CommuteEndPoint {
 }
 
 extension CommuteEndPoint {
-    init(identifier: String, entryHours: ClosedRange<Int>, exitHours: ClosedRange<Int>, location: Location, radius: Double) {
+    init(identifier: String, entryHours: Range<Int>, exitHours: Range<Int>, location: Location, radius: Double) {
         self.identifier = identifier
         self.entryWindow = CommuteSchedule(hours: entryHours)
         self.exitWindow = CommuteSchedule(hours: exitHours)

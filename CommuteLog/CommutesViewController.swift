@@ -11,10 +11,13 @@ import UIKit
 protocol CommutesViewControllerEventHandler: class {
     func commutesViewController(_ vc: CommutesViewController, didSelect commute: Commute)
     func commutesViewController(_ vc: CommutesViewController, didDelete commute: Commute)
+    func startCommute(for vc: CommutesViewController)
+    func endCommute(for vc: CommutesViewController)
 }
 
 class CommutesViewController: UIViewController {
     let tableView: UITableView
+    let formatter: DateFormatter
     weak var eventHandler: CommutesViewControllerEventHandler?
 
     var commutes: [Commute] {
@@ -29,11 +32,13 @@ class CommutesViewController: UIViewController {
         tableView = UITableView(frame: .zero)
         self.commutes = commutes
         self.eventHandler = eventHandler
+        self.formatter = DateFormatter()
+        formatter.dateStyle = .medium
         super.init(nibName: nil, bundle: nil)
     }
 
     required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("Fuck storyboards.")
     }
 
     override func viewDidLoad() {
@@ -52,6 +57,25 @@ class CommutesViewController: UIViewController {
         ])
 
         view.backgroundColor = .white
+        updateNavButton()
+    }
+
+    private func updateNavButton() {
+        if commutes.last?.isActive == true {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "End", style: .plain, target: self, action: #selector(endCommute))
+        } else {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Start", style: .plain, target: self, action: #selector(startCommute))
+        }
+    }
+
+    @objc private func startCommute() {
+        eventHandler?.startCommute(for: self)
+        updateNavButton()
+    }
+
+    @objc private func endCommute() {
+        eventHandler?.endCommute(for: self)
+        updateNavButton()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -68,8 +92,6 @@ extension CommutesViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
         let commute = commutes[indexPath.item]
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
         cell.textLabel?.text = "\(formatter.string(from: commute.start)) - \(String(format: "%0.1f min", commute.duration.duration / 60))"
         cell.detailTextLabel?.text = commute.description
         return cell

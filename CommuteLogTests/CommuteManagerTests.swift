@@ -12,56 +12,44 @@ import XCTest
 
 class CommuteManagerTests: XCTestCase {
     var store: CommuteStore!
-    var home = CommuteEndPoint(identifier: "home", entryHours: 6...10, exitHours: 16...20, location: Location(latitude: 0, longitude: 0), radius: 10)
-    var work = CommuteEndPoint(identifier: "work", entryHours: 7...11, exitHours: 15...19, location: Location(latitude: 100, longitude: 100), radius: 10)
+    var home = CommuteEndPoint(identifier: "home", entryHours: 6..<10, exitHours: 16..<20, location: Location(latitude: 0, longitude: 0), radius: 10)
+    var work = CommuteEndPoint(identifier: "work", entryHours: 7..<11, exitHours: 15..<19, location: Location(latitude: 100, longitude: 100), radius: 10)
+    var manager: CommuteManager!
 
     override func setUp() {
         super.setUp()
 
         store = MockCommuteStore()
+        manager = CommuteManager(store: store, home: home, work: work)
     }
 
     func testCommuteManager_processLocation_updatesStoredActiveCommute() {
-        let manager = CommuteManager(store: store, endPoints: [home, work])
-
-        let active = Commute(start: Date())
-        store.saveActiveCommute(active)
+        let active = Commute(start: Date(), from: home, to: work)
+        store.save(active)
 
         XCTAssert(active.locations.isEmpty)
+        XCTAssert(active.isActive)
 
         manager.processLocation(Location(latitude: 0, longitude: 0, timestamp: Date()))
 
         XCTAssertFalse(active.locations.isEmpty)
-        XCTAssertFalse(store.loadActiveCommute()?.locations.isEmpty ?? true)
+        XCTAssertFalse(store.commute(identifier: "active")?.locations.isEmpty ?? true)
     }
 
 }
 
 private class MockCommuteStore: CommuteStore {
-    var commutes: [Commute]
-    var activeCommute: Commute?
+    var commutes: [String: Commute]
 
-    init(commutes: [Commute] = [], activeCommute: Commute? = nil) {
-        self.commutes = commutes
-        self.activeCommute = activeCommute
-    }
-
-    func save(commutes: [Commute]) {
+    init(commutes: [String: Commute] = [:]) {
         self.commutes = commutes
     }
-    func loadCommutes() -> [Commute] {
+
+    func save(_ commutes: [String: Commute]) {
+        self.commutes = commutes
+    }
+
+    func loadCommutes() -> [String: Commute] {
         return commutes
-    }
-
-    func saveActiveCommute(_ commute: Commute) {
-        activeCommute = commute
-    }
-    func loadActiveCommute() -> Commute? {
-        return activeCommute
-    }
-    func removeActiveCommute() -> Commute? {
-        let commute = activeCommute
-        activeCommute = nil
-        return commute
     }
 }

@@ -9,75 +9,53 @@
 import Foundation
 
 protocol CommuteStore {
-    func save(commute: Commute)
-    func loadCommutes() -> [Commute]
-    func save(commutes: [Commute])
-
-    func saveActiveCommute(_ commute: Commute)
-    func loadActiveCommute() -> Commute?
-    @discardableResult
-    func removeActiveCommute() -> Commute?
+    func save(_ commute: Commute)
+    func loadCommutes() -> [String: Commute]
+    func save(_ commutes: [String: Commute])
 
     @discardableResult
-    func delete(commute: Commute) -> Int?
+    func delete(_ commute: Commute) -> Bool
+    @discardableResult
+    func delete(commuteIdentifier: String) -> Bool
 }
 
 extension CommuteStore {
-    func save(commute: Commute) {
+    func commute(identifier: String) -> Commute? {
+        return loadCommutes()[identifier]
+    }
+    
+    func save(_ commute: Commute) {
         var commutes = loadCommutes()
-        if let index = commutes.firstIndex(where: { $0.start == commute.start }) {
-            commutes[index] = commute
+        if commute.end == nil {
+            commutes["active"] = commute
         } else {
-            commutes.append(commute)
+            commutes[commute.identifier] = commute
         }
-        save(commutes: commutes)
+        save(commutes)
     }
 
-    func delete(commute: Commute) -> Int? {
-        var commutes = loadCommutes()
-        guard let index = commutes.firstIndex(where: {
-            $0.start == commute.start &&
-            $0.end == commute.end &&
-            $0.description == commute.description &&
-            $0.locations.count == commute.locations.count
-        }) else {
-            return nil
-        }
+    func delete(_ commute: Commute) -> Bool {
+        return delete(commuteIdentifier: commute.identifier)
+    }
 
-        commutes.remove(at: index)
-        save(commutes: commutes)
-        return index
+    func delete(commuteIdentifier: String) -> Bool {
+        var commutes = loadCommutes()
+        let result = commutes.removeValue(forKey: commuteIdentifier)
+        save(commutes)
+        return result != nil
     }
 }
 
 extension UserDefaults: CommuteStore {
-    func saveActiveCommute(_ commute: Commute) {
-        let encoder = JSONEncoder()
-        set(try! encoder.encode(commute), forKey: "activeCommute")
-    }
-
-    func loadActiveCommute() -> Commute? {
-        guard let commuteData = value(forKey: "activeCommute") as? Data else { return nil }
+    func loadCommutes() -> [String: Commute] {
+        guard let commutesData = value(forKey: "commutes") as? Data else { return [:] }
 
         let decoder = JSONDecoder()
-        return try? decoder.decode(Commute.self, from: commuteData)
-    }
-
-    func removeActiveCommute() -> Commute? {
-        guard let active = loadActiveCommute() else { return nil }
-        active.end = Date()
-        return active
-    }
-
-    func loadCommutes() -> [Commute] {
-        guard let commutesData = value(forKey: "commutes") as? Data else { return [] }
-
-        let decoder = JSONDecoder()
-        guard let commutes = try? decoder.decode([Commute].self, from: commutesData) else { return [] }
+        guard let commutes = try? decoder.decode([String: Commute].self, from: commutesData) else { return [:] }
         return commutes
     }
 
-    func save(commutes: [Commute]) {
+    func save(_ commutes: [String: Commute]) {
         let encoder = JSONEncoder()
         set(try! encoder.encode(commutes), forKey: "commutes")
     }
