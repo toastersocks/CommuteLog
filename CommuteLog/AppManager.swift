@@ -17,6 +17,9 @@ class AppManager: NSObject {
 
     var nav: UINavigationController
     var commuteViewController: CommutesViewController
+    var detailsViewController: CommuteDetailsViewController? {
+        return nav.topViewController as? CommuteDetailsViewController
+    }
 
     override init() {
         self.commuteStore = UserDefaults.standard
@@ -128,6 +131,13 @@ extension AppManager: CLLocationManagerDelegate {
         }
         for location in locations.filter({ $0.horizontalAccuracy < 50 }) {
             commuteManager.processLocation(Location(location: location))
+        }
+        
+        if let detailsCommute = detailsViewController?.commute,
+            let updatedCommute = commuteManager.activeCommute,
+            detailsCommute.identifier == updatedCommute.identifier,
+            detailsCommute.locations.count != updatedCommute.locations.count {
+            detailsViewController?.updateCommute(updatedCommute)
         }
     }
 }

@@ -13,9 +13,15 @@ class CommuteDetailsViewController: UIViewController {
     let mapView = MKMapView(frame: .zero)
     let formatter: DateFormatter = DateFormatter()
 
-    let commute: Commute
+    private(set) var commute: Commute
+
+    private let startLabel: UILabel
+    private let endLabel: UILabel
+
     init(commute: Commute) {
         self.commute = commute
+        self.startLabel = UILabel(frame: .zero)
+        self.endLabel = UILabel(frame: .zero)
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -31,18 +37,7 @@ class CommuteDetailsViewController: UIViewController {
 
         view.backgroundColor = .white
 
-        let startLabel: UILabel = UILabel(frame: .zero)
-        startLabel.text = "Start: \(formatter.string(from: commute.start))"
-
-        let endLabel: UILabel = UILabel(frame: .zero)
-        let endText: String
-        if let end = commute.end {
-            endText = formatter.string(from: end)
-        } else {
-           endText = "---"
-        }
-        endLabel.text = "End:   \(endText)"
-
+        updateLabels()
         let labels = UIStackView(arrangedSubviews: [startLabel, endLabel])
         labels.alignment = .fill
         labels.axis = .vertical
@@ -63,12 +58,7 @@ class CommuteDetailsViewController: UIViewController {
         formatter.timeStyle = .long
         formatter.dateStyle = .none
 
-        for location in commute.locations {
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
-            annotation.title = formatter.string(from: location.timestamp)
-            mapView.addAnnotation(annotation)
-        }
+        commute.locations.forEach(addAnnotation(for:))
         mapView.preservesSuperviewLayoutMargins = true
         mapView.insetsLayoutMarginsFromSafeArea = true
         mapView.layoutMargins = UIEdgeInsets(top: 25, left: 25, bottom: 25, right: 25)
@@ -80,6 +70,32 @@ class CommuteDetailsViewController: UIViewController {
             mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+    }
+
+    func updateCommute(_ newCommute: Commute) {
+        newCommute.locations.suffix(from: commute.locations.endIndex).forEach(addAnnotation(for:))
+        self.commute = newCommute
+
+        updateLabels()
+    }
+
+    private func addAnnotation(for location: Location) {
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
+        annotation.title = formatter.string(from: location.timestamp)
+        mapView.addAnnotation(annotation)
+    }
+
+    private func updateLabels() {
+        startLabel.text = "Start: \(formatter.string(from: commute.start))"
+
+        let endText: String
+        if let end = commute.end {
+            endText = formatter.string(from: end)
+        } else {
+            endText = "---"
+        }
+        endLabel.text = "End:   \(endText)"
     }
 }
 
