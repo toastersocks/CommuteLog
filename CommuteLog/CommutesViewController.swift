@@ -61,10 +61,10 @@ class CommutesViewController: UIViewController {
     }
 
     private func updateNavButton() {
-        if commutes.last?.isActive == true {
-            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "End", style: .plain, target: self, action: #selector(endCommute))
-        } else {
+        if commutes.filter({ $0.isActive }).isEmpty {
             navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Start", style: .plain, target: self, action: #selector(startCommute))
+        } else {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "End", style: .plain, target: self, action: #selector(endCommute))
         }
     }
 
