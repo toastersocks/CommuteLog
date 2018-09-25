@@ -42,7 +42,7 @@ class AppManager: NSObject {
         Logger.debug("Setting up Location Manager")
         locationManager.delegate = self
 
-        locationManager.activityType = .other
+        locationManager.activityType = .otherNavigation
         locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
         locationManager.distanceFilter = 100
         locationManager.showsBackgroundLocationIndicator = true
@@ -56,8 +56,9 @@ class AppManager: NSObject {
 
         if let _ = commuteManager.activeCommute {
             locationManager.startUpdatingLocation()
+        } else {
+            locationManager.startMonitoringSignificantLocationChanges()
         }
-        locationManager.startMonitoringSignificantLocationChanges()
     }
 
     func startUp() {
@@ -75,17 +76,20 @@ extension AppManager: CommuteDelegate {
         commuteViewController.commutes = manager.fetchCommutes()
         Logger.debug("Starting location tracking for commute.")
         locationManager.startUpdatingLocation()
+        locationManager.stopMonitoringSignificantLocationChanges()
     }
 
     func commuteManager(_ manager: CommuteManager, updatedCommute: Commute) {
         commuteViewController.commutes = manager.fetchCommutes()
         locationManager.startUpdatingLocation()
+        locationManager.stopMonitoringSignificantLocationChanges()
     }
 
     func commuteManager(_ manager: CommuteManager, endedCommute: Commute) {
         commuteViewController.commutes = manager.fetchCommutes()
         Logger.debug("Stopping location tracking due to commute end.")
         locationManager.stopUpdatingLocation()
+        locationManager.startMonitoringSignificantLocationChanges()
     }
 }
 
