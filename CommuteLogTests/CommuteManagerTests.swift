@@ -138,6 +138,18 @@ class CommuteManagerTests: XCTestCase {
         XCTAssertNil(manager.activeCommute)
     }
 
+    func testExitedRegion_ignoresRegionCrossing_whenAlreadyTrackingCommute() {
+        var exitDate = Calendar.current.date(bySetting: .weekdayOrdinal, value: 3, of: Date())!
+        exitDate = Calendar.current.date(bySetting: .hour, value: manager.home.exitWindow.startHour + 1, of: exitDate)!
+
+        let commute = Commute(identifier: "test", start: Date(timeIntervalSinceNow: -120), from: home, to: work)
+        store.commutes["active"] = commute
+        XCTAssertEqual(manager.activeCommute?.identifier, commute.identifier)
+
+        manager.exitedRegion("home", at: exitDate)
+        XCTAssertEqual(manager.activeCommute?.identifier, commute.identifier)
+    }
+
     func testStartCommute_setsActiveCommute() {
         XCTAssertNil(manager.activeCommute)
         manager.startCommute(from: home)

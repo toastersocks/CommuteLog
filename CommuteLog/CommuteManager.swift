@@ -66,6 +66,8 @@ class CommuteManager {
     }
 
     func exitedRegion(_ identifier: String, at date: Date = Date()) {
+        guard activeCommute == nil else { return }
+
         let endpoint = identifier == home.identifier ? home : work
         guard endpoint.exitWindow.contains(date) else {
             Logger.debug("Ignoring inactive region.")
