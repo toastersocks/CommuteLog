@@ -26,7 +26,8 @@ class AppManager: NSObject {
         self.commuteManager = CommuteManager(
             store: commuteStore,
             home: CommuteEndPoint(identifier: "home", entryHours: 16..<21, exitHours: 6..<10, location: Location(latitude: 45.446263, longitude: -122.587414), radius: 50),
-            work: CommuteEndPoint(identifier: "work", entryHours: 7..<11, exitHours: 15..<20, location: Location(latitude: 45.520645, longitude: -122.673128), radius: 50)
+            work: CommuteEndPoint(identifier: "work", entryHours: 7..<11, exitHours: 15..<20, location: Location(latitude: 45.520645, longitude: -122.673128), radius: 50),
+            accuracyLimit: 75
         )
         self.window = UIWindow(frame: UIScreen.main.bounds)
         self.commuteViewController = CommutesViewController()
@@ -133,7 +134,7 @@ extension AppManager: CLLocationManagerDelegate {
         for location in locations {
             Logger.verbose("   \(location)")
         }
-        for location in locations.filter({ $0.horizontalAccuracy < 50 }) {
+        for location in locations {
             commuteManager.processLocation(Location(location: location))
         }
         

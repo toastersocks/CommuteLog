@@ -20,6 +20,7 @@ class CommuteManager {
 
     var home: CommuteEndPoint
     var work: CommuteEndPoint
+    var accuracyFilter: Double
 
     private var _cachedActiveCommute: Commute?
     var activeCommute: Commute? {
@@ -29,13 +30,18 @@ class CommuteManager {
         return _cachedActiveCommute
     }
 
-    init(store: CommuteStore, home: CommuteEndPoint, work: CommuteEndPoint) {
+    init(store: CommuteStore, home: CommuteEndPoint, work: CommuteEndPoint, accuracyLimit: Double = 75) {
         self.store = store
         self.home = home
         self.work = work
+        self.accuracyFilter = accuracyLimit
     }
 
     func processLocation(_ location: Location) {
+        guard location.accuracy <= accuracyFilter else {
+            Logger.verbose("Ignoring location due to accuracyFilter \(accuracyFilter).")
+            return
+        }
         if activeCommute == nil {
             Logger.debug("Got location update without an activeCommute.")
             if home.exitWindow.contains(location.timestamp) || work.entryWindow.contains(location.timestamp) {

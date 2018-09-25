@@ -81,6 +81,32 @@ class CommuteManagerTests: XCTestCase {
         XCTAssertNil(manager.activeCommute)
     }
 
+    func testProcessLocations_discardsLocations_withWorseAccuracyThanLimit() {
+        manager.startCommute(from: home)
+        guard let commute = manager.activeCommute else {
+            XCTFail()
+            return
+        }
+        XCTAssert(commute.locations.isEmpty)
+        let date = Calendar.current.date(bySetting: .hour, value: work.entryWindow.startHour-2, of: Date())!
+        let location = Location(latitude: 1, longitude: 1, accuracy: manager.accuracyFilter + 1, timestamp: date)
+        manager.processLocation(location)
+        XCTAssert(commute.locations.isEmpty)
+    }
+
+    func testProcessLocations_includesLocations_withAccuracyEqualToLimit() {
+        manager.startCommute(from: home)
+        guard let commute = manager.activeCommute else {
+            XCTFail()
+            return
+        }
+        XCTAssert(commute.locations.isEmpty)
+        let date = Calendar.current.date(bySetting: .hour, value: work.entryWindow.startHour-2, of: Date())!
+        let location = Location(latitude: 1, longitude: 1, accuracy: manager.accuracyFilter, timestamp: date)
+        manager.processLocation(location)
+        XCTAssertFalse(commute.locations.isEmpty)
+    }
+
     func testEnteredRegion_endsHomeCommute() {
         var entryDate = Calendar.current.date(bySetting: .weekdayOrdinal, value: 3, of: Date())!
         entryDate = Calendar.current.date(bySetting: .hour, value: manager.home.entryWindow.startHour + 1, of: entryDate)!
