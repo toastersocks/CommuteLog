@@ -24,6 +24,7 @@ class CommutesViewController: UIViewController {
         didSet {
             DispatchQueue.main.async {
                 self.tableView.reloadData()
+                self.updateNavButton()
             }
         }
     }
@@ -94,6 +95,11 @@ extension CommutesViewController: UITableViewDataSource {
         let commute = commutes[indexPath.item]
         cell.textLabel?.text = "\(formatter.string(from: commute.start)) - \(String(format: "%0.1f min", commute.duration.duration / 60))"
         cell.detailTextLabel?.text = commute.description
+        if commute.isActive {
+            cell.backgroundColor = .green
+        } else {
+            cell.backgroundColor = .white
+        }
         return cell
     }
 }
