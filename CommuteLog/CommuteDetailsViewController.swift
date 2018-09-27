@@ -58,6 +58,7 @@ class CommuteDetailsViewController: UIViewController {
         formatter.timeStyle = .long
         formatter.dateStyle = .none
 
+        [commute.startPoint, commute.endPoint].forEach(addAnnotation(for:))
         commute.locations.forEach(addAnnotation(for:))
         mapView.preservesSuperviewLayoutMargins = true
         mapView.insetsLayoutMarginsFromSafeArea = true
@@ -81,9 +82,21 @@ class CommuteDetailsViewController: UIViewController {
 
     private func addAnnotation(for location: Location) {
         let annotation = MKPointAnnotation()
-        annotation.coordinate = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
+        annotation.coordinate = location.clCoordinate
         annotation.title = formatter.string(from: location.timestamp)
         mapView.addAnnotation(annotation)
+    }
+
+    private func addAnnotation(for endPoint: CommuteEndPoint) {
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = endPoint.location.clCoordinate
+        annotation.title = endPoint.identifier == commute.startPoint.identifier ? "Start" : "End"
+        annotation.subtitle = endPoint.identifier
+        mapView.addAnnotation(annotation)
+
+        let circle = MKCircle(center: endPoint.location.clCoordinate, radius: endPoint.radius)
+        circle.title = annotation.title
+        mapView.addOverlay(circle)
     }
 
     private func updateLabels() {
@@ -104,6 +117,31 @@ extension CommuteDetailsViewController: MKMapViewDelegate {
         let pin = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "commuteLocation")
         pin.animatesDrop = true
         pin.canShowCallout = true
+        if annotation.title == "Start" {
+            pin.pinTintColor = .green
+        } else if annotation.title == "End" {
+            pin.pinTintColor = .red
+        } else {
+            pin.pinTintColor = .gray
+        }
         return pin
+    }
+
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        if let overlay = overlay as? MKCircle {
+            let circle = MKCircleRenderer(overlay: overlay)
+            switch overlay.title {
+            case "Start":
+                circle.strokeColor = .green
+            case "End":
+                circle.strokeColor = .red
+            default: break
+            }
+            circle.fillColor = circle.strokeColor?.withAlphaComponent(0.1)
+            circle.lineWidth = 1
+            return circle
+        } else {
+            return MKPolylineRenderer()
+        }
     }
 }

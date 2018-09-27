@@ -17,6 +17,8 @@ private let formatter: DateFormatter = {
 final class Commute: Codable {
     var identifier: String
     var start: Date
+    var startPoint: CommuteEndPoint
+    var endPoint: CommuteEndPoint
     var end: Date?
     var locations: [Location] = []
     var description: String = ""
@@ -31,6 +33,8 @@ final class Commute: Codable {
 
     init(identifier: String? = nil, start: Date, from beginning: CommuteEndPoint, to end: CommuteEndPoint) {
         self.start = start
+        self.startPoint = beginning
+        self.endPoint = end
         self.identifier = identifier ?? "\(beginning.identifier) -> \(end.identifier) \(formatter.string(from: start))"
     }
 }
