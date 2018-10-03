@@ -23,90 +23,6 @@ class CommuteManagerTests: XCTestCase {
         manager = CommuteManager(store: store, home: home, work: work)
     }
 
-    func testProcessLocation_updatesStoredActiveCommute() {
-        let active = Commute(start: Date(), from: home, to: work)
-        store.save(active)
-
-        XCTAssert(active.locations.isEmpty)
-        XCTAssert(active.isActive)
-
-        manager.processLocation(Location(latitude: 0, longitude: 0, timestamp: Date()))
-
-        XCTAssertFalse(active.locations.isEmpty)
-        XCTAssertFalse(store.commute(identifier: "active")?.locations.isEmpty ?? true)
-    }
-
-    func testProcessLocation_startsCommute_duringHomeExitWindow() {
-        XCTAssertNil(manager.activeCommute)
-        let date = Calendar.current.date(bySetting: .hour, value: home.exitWindow.startHour, of: Date())!
-        XCTAssert(manager.home.exitWindow.contains(date))
-        let location = Location(latitude: 0, longitude: 0, accuracy: 1, timestamp: date)
-        manager.processLocation(location)
-        XCTAssertNotNil(manager.activeCommute)
-    }
-
-    func testProcessLocation_startsCommute_duringHomeEntryWindow() {
-        XCTAssertNil(manager.activeCommute)
-        let date = Calendar.current.date(bySetting: .hour, value: home.entryWindow.startHour, of: Date())!
-        XCTAssert(manager.home.entryWindow.contains(date))
-        let location = Location(latitude: 0, longitude: 0, accuracy: 1, timestamp: date)
-        manager.processLocation(location)
-        XCTAssertNotNil(manager.activeCommute)
-    }
-
-    func testProcessLocation_startsCommute_duringWorkExitWindow() {
-        XCTAssertNil(manager.activeCommute)
-        let date = Calendar.current.date(bySetting: .hour, value: work.exitWindow.startHour, of: Date())!
-        XCTAssert(manager.work.exitWindow.contains(date))
-        let location = Location(latitude: 0, longitude: 0, accuracy: 1, timestamp: date)
-        manager.processLocation(location)
-        XCTAssertNotNil(manager.activeCommute)
-    }
-
-    func testProcessLocation_startsCommute_duringWorkEntryWindow() {
-        XCTAssertNil(manager.activeCommute)
-        let date = Calendar.current.date(bySetting: .hour, value: work.entryWindow.startHour, of: Date())!
-        XCTAssert(manager.work.entryWindow.contains(date))
-        let location = Location(latitude: 0, longitude: 0, accuracy: 1, timestamp: date)
-        manager.processLocation(location)
-        XCTAssertNotNil(manager.activeCommute)
-    }
-
-    func testProcessLocation_discardsLocations_withNoActiveCommute_outsideCommuteHours() {
-        XCTAssertNil(manager.activeCommute)
-        let date = Calendar.current.date(bySetting: .hour, value: work.entryWindow.startHour-2, of: Date())!
-        XCTAssertFalse(manager.work.entryWindow.contains(date))
-        let location = Location(latitude: 0, longitude: 0, accuracy: 1, timestamp: date)
-        manager.processLocation(location)
-        XCTAssertNil(manager.activeCommute)
-    }
-
-    func testProcessLocations_discardsLocations_withWorseAccuracyThanLimit() {
-        manager.startCommute(from: home)
-        guard let commute = manager.activeCommute else {
-            XCTFail()
-            return
-        }
-        XCTAssert(commute.locations.isEmpty)
-        let date = Calendar.current.date(bySetting: .hour, value: work.entryWindow.startHour-2, of: Date())!
-        let location = Location(latitude: 1, longitude: 1, accuracy: manager.accuracyFilter + 1, timestamp: date)
-        manager.processLocation(location)
-        XCTAssert(commute.locations.isEmpty)
-    }
-
-    func testProcessLocations_includesLocations_withAccuracyEqualToLimit() {
-        manager.startCommute(from: home)
-        guard let commute = manager.activeCommute else {
-            XCTFail()
-            return
-        }
-        XCTAssert(commute.locations.isEmpty)
-        let date = Calendar.current.date(bySetting: .hour, value: work.entryWindow.startHour-2, of: Date())!
-        let location = Location(latitude: 1, longitude: 1, accuracy: manager.accuracyFilter, timestamp: date)
-        manager.processLocation(location)
-        XCTAssertFalse(commute.locations.isEmpty)
-    }
-
     func testEnteredRegion_endsHomeCommute() {
         var entryDate = Calendar.current.date(bySetting: .weekdayOrdinal, value: 3, of: Date())!
         entryDate = Calendar.current.date(bySetting: .hour, value: manager.home.entryWindow.startHour + 1, of: entryDate)!
@@ -236,6 +152,21 @@ class CommuteManagerTests: XCTestCase {
         XCTAssertEqual(commutes[0].identifier, "b")
         XCTAssertEqual(commutes[1].identifier, "c")
         XCTAssertEqual(commutes[2].identifier, "a")
+    }
+
+    func testActiveCommute_loadsMostRecentCommuteWithoutAnEnd() {
+        XCTAssertNil(manager.activeCommute)
+        store.commutes = [
+            "a": Commute(identifier: "a", start: Date(timeIntervalSinceNow: -120), from: home, to: work),
+            "b": Commute(identifier: "b", start: Date(timeIntervalSinceNow: -20), from: home, to: work),
+            "c": Commute(identifier: "c", start: Date(timeIntervalSinceNow: -180), from: home, to: work)
+        ]
+        store.commutes["c"]?.end = Date()
+
+        XCTAssertEqual(manager.activeCommute?.identifier, "b")
+        manager.endCommute(save: true)
+        XCTAssertNotNil(store.commutes["b"]?.end)
+        XCTAssertEqual(manager.activeCommute?.identifier, "a")
     }
 }
 

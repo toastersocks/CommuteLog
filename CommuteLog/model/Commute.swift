@@ -11,6 +11,7 @@ import Foundation
 private let formatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.dateStyle = .medium
+    formatter.timeStyle = .short
     return formatter
 }()
 
@@ -20,7 +21,6 @@ final class Commute: Codable {
     var startPoint: CommuteEndPoint
     var endPoint: CommuteEndPoint
     var end: Date?
-    var locations: [Location] = []
     var description: String = ""
 
     var duration: DateInterval {

@@ -10,6 +10,8 @@
 		F90062F42146269600036AFF /* CommuteEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = F90062F32146269600036AFF /* CommuteEndpoint.swift */; };
 		F90062F6214626CF00036AFF /* CommuteSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = F90062F5214626CF00036AFF /* CommuteSchedule.swift */; };
 		F906A23521474702007097F5 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F906A23421474702007097F5 /* Logger.swift */; };
+		F97E4D7F215C9343003E8888 /* LocationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F97E4D7E215C9343003E8888 /* LocationStore.swift */; };
+		F97E4D82215C98B2003E8888 /* LocationWrangler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F97E4D81215C98B2003E8888 /* LocationWrangler.swift */; };
 		F98F768121292178000AFF7B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98F768021292178000AFF7B /* AppDelegate.swift */; };
 		F98F768321292178000AFF7B /* CommutesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98F768221292178000AFF7B /* CommutesViewController.swift */; };
 		F98F76882129217B000AFF7B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F98F76872129217B000AFF7B /* Assets.xcassets */; };
@@ -20,6 +22,7 @@
 		F98F76D52129C865000AFF7B /* Commute.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98F76D42129C865000AFF7B /* Commute.swift */; };
 		F98F76D72129C890000AFF7B /* CommuteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98F76D62129C890000AFF7B /* CommuteStore.swift */; };
 		F9A5ED51213F6224006F8681 /* CommuteDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A5ED50213F6224006F8681 /* CommuteDetailsViewController.swift */; };
+		F9A7AF6D21647F5300363565 /* LocationWranglerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7AF6C21647F5300363565 /* LocationWranglerTests.swift */; };
 		F9B566712148CA0800BE4095 /* CommuteManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B566702148CA0800BE4095 /* CommuteManagerTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +40,8 @@
 		F90062F32146269600036AFF /* CommuteEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommuteEndpoint.swift; sourceTree = "<group>"; };
 		F90062F5214626CF00036AFF /* CommuteSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommuteSchedule.swift; sourceTree = "<group>"; };
 		F906A23421474702007097F5 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		F97E4D7E215C9343003E8888 /* LocationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationStore.swift; sourceTree = "<group>"; };
+		F97E4D81215C98B2003E8888 /* LocationWrangler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationWrangler.swift; sourceTree = "<group>"; };
 		F98F767D21292178000AFF7B /* CommuteLog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CommuteLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F98F768021292178000AFF7B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F98F768221292178000AFF7B /* CommutesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommutesViewController.swift; sourceTree = "<group>"; };
@@ -51,6 +56,7 @@
 		F98F76D42129C865000AFF7B /* Commute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commute.swift; sourceTree = "<group>"; };
 		F98F76D62129C890000AFF7B /* CommuteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommuteStore.swift; sourceTree = "<group>"; };
 		F9A5ED50213F6224006F8681 /* CommuteDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommuteDetailsViewController.swift; sourceTree = "<group>"; };
+		F9A7AF6C21647F5300363565 /* LocationWranglerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationWranglerTests.swift; sourceTree = "<group>"; };
 		F9B566702148CA0800BE4095 /* CommuteManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommuteManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -80,6 +86,15 @@
 			path = util;
 			sourceTree = "<group>";
 		};
+		F97E4D80215C9664003E8888 /* storage */ = {
+			isa = PBXGroup;
+			children = (
+				F98F76D62129C890000AFF7B /* CommuteStore.swift */,
+				F97E4D7E215C9343003E8888 /* LocationStore.swift */,
+			);
+			path = storage;
+			sourceTree = "<group>";
+		};
 		F98F767421292178000AFF7B = {
 			isa = PBXGroup;
 			children = (
@@ -105,6 +120,7 @@
 				F98F76D12129C822000AFF7B /* model */,
 				F98F768021292178000AFF7B /* AppDelegate.swift */,
 				F98F76CD2129B612000AFF7B /* AppManager.swift */,
+				F97E4D81215C98B2003E8888 /* LocationWrangler.swift */,
 				F98F76CF2129B656000AFF7B /* CommuteManager.swift */,
 				F98F768221292178000AFF7B /* CommutesViewController.swift */,
 				F9A5ED50213F6224006F8681 /* CommuteDetailsViewController.swift */,
@@ -120,6 +136,7 @@
 			children = (
 				F98F76972129217B000AFF7B /* Info.plist */,
 				F9B566702148CA0800BE4095 /* CommuteManagerTests.swift */,
+				F9A7AF6C21647F5300363565 /* LocationWranglerTests.swift */,
 			);
 			path = CommuteLogTests;
 			sourceTree = "<group>";
@@ -127,8 +144,8 @@
 		F98F76D12129C822000AFF7B /* model */ = {
 			isa = PBXGroup;
 			children = (
+				F97E4D80215C9664003E8888 /* storage */,
 				F98F76D42129C865000AFF7B /* Commute.swift */,
-				F98F76D62129C890000AFF7B /* CommuteStore.swift */,
 				F98F76D22129C835000AFF7B /* Location.swift */,
 				F90062F32146269600036AFF /* CommuteEndpoint.swift */,
 				F90062F5214626CF00036AFF /* CommuteSchedule.swift */,
@@ -244,8 +261,10 @@
 				F98F76D52129C865000AFF7B /* Commute.swift in Sources */,
 				F90062F42146269600036AFF /* CommuteEndpoint.swift in Sources */,
 				F9A5ED51213F6224006F8681 /* CommuteDetailsViewController.swift in Sources */,
+				F97E4D7F215C9343003E8888 /* LocationStore.swift in Sources */,
 				F98F76D32129C835000AFF7B /* Location.swift in Sources */,
 				F98F768321292178000AFF7B /* CommutesViewController.swift in Sources */,
+				F97E4D82215C98B2003E8888 /* LocationWrangler.swift in Sources */,
 				F98F768121292178000AFF7B /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -254,6 +273,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9A7AF6D21647F5300363565 /* LocationWranglerTests.swift in Sources */,
 				F9B566712148CA0800BE4095 /* CommuteManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

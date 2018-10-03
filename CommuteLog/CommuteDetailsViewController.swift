@@ -14,12 +14,15 @@ class CommuteDetailsViewController: UIViewController {
     let formatter: DateFormatter = DateFormatter()
 
     private(set) var commute: Commute
+    private let locationStore: LocationStore
+    private var locations: [Location] = []
 
     private let startLabel: UILabel
     private let endLabel: UILabel
 
-    init(commute: Commute) {
+    init(commute: Commute, locationStore: LocationStore) {
         self.commute = commute
+        self.locationStore = locationStore
         self.startLabel = UILabel(frame: .zero)
         self.endLabel = UILabel(frame: .zero)
         super.init(nibName: nil, bundle: nil)
@@ -59,7 +62,8 @@ class CommuteDetailsViewController: UIViewController {
         formatter.dateStyle = .none
 
         [commute.startPoint, commute.endPoint].forEach(addAnnotation(for:))
-        commute.locations.forEach(addAnnotation(for:))
+        locations = locationStore.locations(for: commute)
+        locations.forEach(addAnnotation(for:))
         mapView.preservesSuperviewLayoutMargins = true
         mapView.insetsLayoutMarginsFromSafeArea = true
         mapView.layoutMargins = UIEdgeInsets(top: 25, left: 25, bottom: 25, right: 25)
@@ -74,8 +78,14 @@ class CommuteDetailsViewController: UIViewController {
     }
 
     func updateCommute(_ newCommute: Commute) {
-        newCommute.locations.suffix(from: commute.locations.endIndex).forEach(addAnnotation(for:))
-        self.commute = newCommute
+        let newLocations = locationStore.locations(for: newCommute)
+        if newLocations.count > locations.count {
+            newLocations.suffix(from: locations.endIndex).forEach(addAnnotation(for:))
+        } else {
+            newLocations.forEach(addAnnotation(for:))
+        }
+        locations = newLocations
+        commute = newCommute
 
         updateLabels()
     }

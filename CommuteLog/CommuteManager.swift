@@ -7,58 +7,48 @@
 //
 
 import Foundation
+import CoreLocation
 
 protocol CommuteDelegate: class {
     func commuteManager(_ manager: CommuteManager, startedCommute: Commute)
-    func commuteManager(_ manager: CommuteManager, updatedCommute: Commute)
     func commuteManager(_ manager: CommuteManager, endedCommute: Commute)
 }
 
-class CommuteManager {
+class CommuteManager: NSObject {
     private var store: CommuteStore
     weak var delegate: CommuteDelegate?
 
     var home: CommuteEndPoint
     var work: CommuteEndPoint
-    var accuracyFilter: Double
+
+    var locationManager: CLLocationManager
 
     private var _cachedActiveCommute: Commute?
     var activeCommute: Commute? {
         if _cachedActiveCommute == nil {
-            _cachedActiveCommute = store.commute(identifier: "active")
+            _cachedActiveCommute = store.loadCommutes().values.sorted(by: { $0.start < $1.start }).last(where: { $0.end == nil })
         }
         return _cachedActiveCommute
     }
 
-    init(store: CommuteStore, home: CommuteEndPoint, work: CommuteEndPoint, accuracyLimit: Double = 75) {
+    init(store: CommuteStore, home: CommuteEndPoint, work: CommuteEndPoint) {
         self.store = store
         self.home = home
         self.work = work
-        self.accuracyFilter = accuracyLimit
+        self.locationManager = CLLocationManager()
+        super.init()
+
+        setupLocationManager()
     }
 
-    func processLocation(_ location: Location) {
-        guard location.accuracy <= accuracyFilter else {
-            Logger.verbose("Ignoring location due to accuracyFilter \(accuracyFilter).")
-            return
+    func setupLocationManager() {
+        Logger.debug("Setting up Location Manager")
+        locationManager.delegate = self
+        locationManager.requestAlwaysAuthorization()
+
+        for endpoint in [home, work] {
+            locationManager.startMonitoring(for: endpoint.region)
         }
-        if activeCommute == nil {
-            Logger.debug("Got location update without an activeCommute.")
-            if home.exitWindow.contains(location.timestamp) || work.entryWindow.contains(location.timestamp) {
-                startCommute(from: home)
-            } else if home.entryWindow.contains(location.timestamp) || work.exitWindow.contains(location.timestamp) {
-                startCommute(from: work)
-            }
-        }
-        guard let commute = activeCommute else {
-            Logger.warning("Got location \(location) without activeCommute outside of commute hours.")
-            return
-        }
-        
-        Logger.debug("Adding location \(location) to activeCommute.")
-        commute.locations.append(location)
-        store.save(commute)
-        delegate?.commuteManager(self, updatedCommute: commute)
     }
 
     func enteredRegion(_ identifier: String, at date: Date = Date()) {
@@ -111,5 +101,17 @@ class CommuteManager {
 
     func fetchCommutes() -> [Commute] {
         return store.loadCommutes().values.sorted(by: { $0.start < $1.start })
+    }
+}
+
+extension CommuteManager: CLLocationManagerDelegate {
+    func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
+        Logger.debug("Exited region \(region.identifier)")
+        exitedRegion(region.identifier)
+    }
+
+    func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+        Logger.debug("Entered region \(region.identifier)")
+        enteredRegion(region.identifier)
     }
 }
