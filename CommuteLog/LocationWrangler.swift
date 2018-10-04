@@ -36,6 +36,7 @@ class LocationWrangler: NSObject {
         clLocationManager.distanceFilter = 100
         clLocationManager.showsBackgroundLocationIndicator = true
         clLocationManager.pausesLocationUpdatesAutomatically = false
+        clLocationManager.allowsBackgroundLocationUpdates = true
 
         clLocationManager.requestAlwaysAuthorization()
         clLocationManager.delegate = self

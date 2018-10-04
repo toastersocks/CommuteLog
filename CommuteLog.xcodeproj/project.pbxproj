@@ -101,6 +101,7 @@
 				F98F767F21292178000AFF7B /* CommuteLog */,
 				F98F76942129217B000AFF7B /* CommuteLogTests */,
 				F98F767E21292178000AFF7B /* Products */,
+				F9F248072165CD27003E38A8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -153,6 +154,13 @@
 			path = model;
 			sourceTree = "<group>";
 		};
+		F9F248072165CD27003E38A8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -203,6 +211,14 @@
 				TargetAttributes = {
 					F98F767C21292178000AFF7B = {
 						CreatedOnToolsVersion = 10.0;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+							com.apple.Maps.iOS = {
+								enabled = 0;
+							};
+						};
 					};
 					F98F76902129217B000AFF7B = {
 						CreatedOnToolsVersion = 10.0;
