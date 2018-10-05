@@ -33,7 +33,7 @@ class LocationWrangler: NSObject {
 
         clLocationManager.activityType = .other
         clLocationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-        clLocationManager.distanceFilter = 100
+        clLocationManager.distanceFilter = 300
         clLocationManager.showsBackgroundLocationIndicator = true
         clLocationManager.pausesLocationUpdatesAutomatically = false
         clLocationManager.allowsBackgroundLocationUpdates = true
