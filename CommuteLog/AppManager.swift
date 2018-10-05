@@ -62,7 +62,7 @@ extension AppManager: CommuteDelegate {
     func commuteManager(_ manager: CommuteManager, endedCommute: Commute) {
         commuteViewController.commutes = manager.fetchCommutes()
         Logger.debug("Stopping location tracking due to commute end.")
-        locationWrangler.stopTracking()
+        locationWrangler.stopTracking(save: true)
     }
 }
 

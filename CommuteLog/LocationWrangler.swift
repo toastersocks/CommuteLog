@@ -47,9 +47,12 @@ class LocationWrangler: NSObject {
         clLocationManager.startUpdatingLocation()
     }
 
-    func stopTracking() {
+    func stopTracking(save: Bool) {
         Logger.debug("Stopping Location Tracking")
         clLocationManager.stopUpdatingLocation()
+        if save, let location = clLocationManager.location {
+            processLocation(Location(location: location))
+        }
     }
 
     func processLocation(_ location: Location) {
