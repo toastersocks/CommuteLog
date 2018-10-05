@@ -20,6 +20,8 @@ class CommutesViewController: UIViewController {
     let formatter: DateFormatter
     weak var eventHandler: CommutesViewControllerEventHandler?
 
+    private var activeCommuteTimer: Timer?
+
     var commutes: [Commute] {
         didSet {
             DispatchQueue.main.async {
@@ -72,16 +74,43 @@ class CommutesViewController: UIViewController {
     @objc private func startCommute() {
         eventHandler?.startCommute(for: self)
         updateNavButton()
+        updateActiveCommuteTimer()
     }
 
     @objc private func endCommute() {
         eventHandler?.endCommute(for: self)
         updateNavButton()
+
+        updateActiveCommuteTimer()
+    }
+
+    private func updateActiveCommuteTimer() {
+        let activeCommutePaths: [IndexPath] = commutes.enumerated().compactMap { c in
+            guard c.element.isActive else { return nil }
+            return IndexPath(row: c.offset, section: 0)
+        }
+
+        if activeCommutePaths.isEmpty {
+            activeCommuteTimer?.invalidate()
+            activeCommuteTimer = nil
+        } else {
+            activeCommuteTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+                self.tableView.reloadRows(at: activeCommutePaths, with: .none)
+            }
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
+
+        updateActiveCommuteTimer()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        updateActiveCommuteTimer()
     }
 }
 
