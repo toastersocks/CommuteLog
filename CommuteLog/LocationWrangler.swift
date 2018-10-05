@@ -31,7 +31,7 @@ class LocationWrangler: NSObject {
     func setupLocationManager() {
         Logger.debug("Setting up Location Manager")
 
-        clLocationManager.activityType = .otherNavigation
+        clLocationManager.activityType = .other
         clLocationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
         clLocationManager.distanceFilter = 100
         clLocationManager.showsBackgroundLocationIndicator = true
