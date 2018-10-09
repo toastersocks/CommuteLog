@@ -6,7 +6,7 @@
 //  Copyright © 2018 Aranasaurus. All rights reserved.
 //
 
-import Foundation
+import UIKit
 import CoreLocation
 
 protocol LocationWranglerDelegate: class {
@@ -45,11 +45,16 @@ class LocationWrangler: NSObject {
     func startTracking() {
         Logger.debug("Starting Location Tracking")
         clLocationManager.startUpdatingLocation()
+        if UIApplication.shared.applicationState == .background {
+            Logger.debug("Monitoring SignificantLocationChanges because we're in the background.")
+            clLocationManager.startMonitoringSignificantLocationChanges()
+        }
     }
 
     func stopTracking(save: Bool) {
         Logger.debug("Stopping Location Tracking")
         clLocationManager.stopUpdatingLocation()
+        clLocationManager.stopMonitoringSignificantLocationChanges()
         if save, let location = clLocationManager.location {
             processLocation(Location(location: location))
         }
@@ -71,11 +76,21 @@ class LocationWrangler: NSObject {
 
 extension LocationWrangler: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        Logger.debug("Received \(locations.count) locations")
+        Logger.debug("Received \(locations.count) locations. AppState: \(UIApplication.shared.applicationState)")
         locations.map(Location.init(location:)).forEach(processLocation(_:))
     }
 }
 
 extension Location {
     var clCoordinate: CLLocationCoordinate2D { return CLLocationCoordinate2D(latitude: latitude, longitude: longitude) }
+}
+
+extension UIApplication.State: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .active: return "active"
+        case .background: return "background"
+        case .inactive: return "inactive"
+        }
+    }
 }
