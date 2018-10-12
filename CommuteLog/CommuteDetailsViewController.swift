@@ -57,6 +57,7 @@ class CommuteDetailsViewController: UIViewController {
         ])
 
         mapView.translatesAutoresizingMaskIntoConstraints = false
+        mapView.showsUserLocation = true
         mapView.delegate = self
         formatter.timeStyle = .long
         formatter.dateStyle = .none
@@ -124,6 +125,7 @@ class CommuteDetailsViewController: UIViewController {
 
 extension CommuteDetailsViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        if annotation is MKUserLocation { return nil }
         let pin = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "commuteLocation")
         pin.animatesDrop = true
         pin.canShowCallout = true
