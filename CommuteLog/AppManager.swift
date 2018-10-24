@@ -44,6 +44,27 @@ class AppManager: NSObject {
         if let _ = commuteManager.activeCommute {
             locationWrangler.startTracking()
         }
+
+        updateStartStopButton()
+    }
+
+    private func updateStartStopButton() {
+        if commuteViewController.commutes.filter({ $0.isActive }).isEmpty {
+            commuteViewController.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Start", style: .plain, target: self, action: #selector(startCommute))
+        } else {
+            commuteViewController.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "End", style: .plain, target: self, action: #selector(endCommute))
+        }
+    }
+
+    @objc private func startCommute() {
+        if commuteManager.activeCommute != nil {
+            commuteManager.endCommute(save: true)
+        }
+        commuteManager.startCommute(force: true)
+    }
+
+    @objc private func endCommute() {
+        commuteManager.endCommute(save: true)
     }
 }
 
@@ -52,12 +73,14 @@ extension AppManager: CommuteDelegate {
         commuteViewController.commutes = manager.fetchCommutes()
         Logger.debug("Starting location tracking for commute.")
         locationWrangler.startTracking()
+        updateStartStopButton()
     }
 
     func commuteManager(_ manager: CommuteManager, endedCommute: Commute) {
         commuteViewController.commutes = manager.fetchCommutes()
         Logger.debug("Stopping location tracking due to commute end.")
         locationWrangler.stopTracking(save: true)
+        updateStartStopButton()
     }
 }
 
@@ -72,17 +95,6 @@ extension AppManager: CommutesViewControllerEventHandler {
         commuteManager.delete(commute)
         
         commuteViewController.commutes = commuteManager.fetchCommutes()
-    }
-    
-    func startCommute(for vc: CommutesViewController) {
-        if commuteManager.activeCommute != nil {
-            commuteManager.endCommute(save: true)
-        }
-        commuteManager.startCommute()
-    }
-
-    func endCommute(for vc: CommutesViewController) {
-        commuteManager.endCommute(save: true)
     }
 }
 

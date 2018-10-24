@@ -74,10 +74,36 @@ class CommuteManager: NSObject {
         startCommute()
     }
 
-    func startCommute() {
-        guard let startPoint = schedule?.activeStartPoint,
-            let endPoint = schedule?.activeEndPoint
-            else { return }
+    func startCommute(force: Bool = false) {
+        let startPoint: CommuteEndPoint
+        let endPoint: CommuteEndPoint
+        if let start = schedule?.activeStartPoint, let end = schedule?.activeEndPoint {
+            startPoint = start
+            endPoint = end
+        } else {
+            guard force, let schedule = self.schedule else { return }
+
+            #warning("TODO: This picks the most likely starting point based on the time of day. It _should_ be picking based on location, but that's harder.")
+            let hour = Calendar.current.component(.hour, from: Date())
+            if schedule.home.exitWindow.hours.contains(hour) {
+                startPoint = schedule.home
+                endPoint = schedule.work
+            } else if schedule.work.exitWindow.hours.contains(hour) {
+                startPoint = schedule.work
+                endPoint = schedule.home
+            } else if hour < schedule.home.exitWindow.startHour  {
+                startPoint = schedule.home
+                endPoint = schedule.work
+            } else if hour > schedule.work.exitWindow.endHour {
+                startPoint = schedule.work
+                endPoint = schedule.home
+            } else {
+                let homeTimeDiff = abs(schedule.home.exitWindow.distance(from: hour))
+                let workTimeDiff = abs(schedule.work.exitWindow.distance(from: hour))
+                startPoint = homeTimeDiff <= workTimeDiff ? schedule.home : schedule.work
+                endPoint = homeTimeDiff <= workTimeDiff ? schedule.work : schedule.home
+            }
+        }
 
         let commute = Commute(start: Date(), from: startPoint, to: endPoint)
         _cachedActiveCommute = commute
