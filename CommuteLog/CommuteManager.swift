@@ -15,29 +15,6 @@ protocol CommuteDelegate: class {
 }
 
 class CommuteManager: NSObject {
-    private struct Schedule {
-        var home: CommuteEndPoint
-        var work: CommuteEndPoint
-
-        var regions: [CLRegion] {
-            return [home.region, work.region]
-        }
-
-        var isActive: Bool { return home.isActive || work.isActive }
-        var activeStartPoint: CommuteEndPoint? {
-            if home.isActive { return home }
-            if work.isActive { return work }
-            return nil
-        }
-        var activeEndPoint: CommuteEndPoint? {
-            guard let start = activeStartPoint else { return nil }
-            return start.isHome ? work : home
-        }
-
-        func endpoint(_ identifier: String) -> CommuteEndPoint? {
-            return [home, work].filter({ $0.identifier == identifier }).first
-        }
-    }
     private var store: CommuteStore
     weak var delegate: CommuteDelegate?
 
@@ -55,9 +32,7 @@ class CommuteManager: NSObject {
 
     init(store: CommuteStore) {
         self.store = store
-        if let home = store.loadHome(), let work = store.loadWork() {
-            schedule = Schedule(home: home, work: work)
-        }
+        self.schedule = store.loadSchedule()
         self.locationManager = CLLocationManager()
         super.init()
 
@@ -143,5 +118,40 @@ extension CommuteManager: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         Logger.debug("Entered region \(region.identifier)")
         enteredRegion(region.identifier)
+    }
+}
+
+extension CommuteManager {
+    fileprivate struct Schedule {
+        var home: CommuteEndPoint
+        var work: CommuteEndPoint
+
+        var regions: [CLRegion] {
+            return [home.region, work.region]
+        }
+
+        var isActive: Bool { return home.isActive || work.isActive }
+        var activeStartPoint: CommuteEndPoint? {
+            if home.isActive { return home }
+            if work.isActive { return work }
+            return nil
+        }
+        var activeEndPoint: CommuteEndPoint? {
+            guard let start = activeStartPoint else { return nil }
+            return start.isHome ? work : home
+        }
+
+        func endpoint(_ identifier: String) -> CommuteEndPoint? {
+            return [home, work].filter({ $0.identifier == identifier }).first
+        }
+    }
+}
+
+extension CommuteStore {
+    fileprivate func loadSchedule() -> CommuteManager.Schedule? {
+        #warning("TODO: This is using my house and work as a default, just to keep it working until I get the UI added in for modifying it in the app. Once that feature is complete these defaults should be removed.")
+        let home = loadHome() ?? CommuteEndPoint(identifier: "home", entryHours: 16..<21, exitHours: 6..<10, location: Location(latitude: 45.446263, longitude: -122.587414), radius: 50, isHome: true)
+        let work = loadWork() ?? CommuteEndPoint(identifier: "work", entryHours: 7..<11, exitHours: 15..<20, location: Location(latitude: 45.520645, longitude: -122.673128), radius: 50, isHome: false)
+        return CommuteManager.Schedule(home: home, work: work)
     }
 }
