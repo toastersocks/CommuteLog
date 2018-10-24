@@ -17,7 +17,21 @@ struct CommuteSchedule: Codable {
     func contains(_ date: Date) -> Bool {
         guard !Calendar.current.isDateInWeekend(date) else { return false }
         guard let hour = Calendar.current.dateComponents([.hour], from: date).hour else { return false }
+        return contains(hour)
+    }
+
+    func contains(_ hour: Int) -> Bool {
         return hours.contains(hour)
+    }
+
+    func distance(from hour: Int) -> Int {
+        switch hour {
+        case 0..<startHour:
+            return startHour - hour
+        case endHour+1 ..< 24:
+            return hour - endHour - 1
+        default: return 0
+        }
     }
 }
 

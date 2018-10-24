@@ -11,8 +11,6 @@ import UIKit
 protocol CommutesViewControllerEventHandler: class {
     func commutesViewController(_ vc: CommutesViewController, didSelect commute: Commute)
     func commutesViewController(_ vc: CommutesViewController, didDelete commute: Commute)
-    func startCommute(for vc: CommutesViewController)
-    func endCommute(for vc: CommutesViewController)
 }
 
 class CommutesViewController: UIViewController {
@@ -26,7 +24,6 @@ class CommutesViewController: UIViewController {
         didSet {
             DispatchQueue.main.async {
                 self.tableView.reloadData()
-                self.updateNavButton()
             }
         }
     }
@@ -60,28 +57,6 @@ class CommutesViewController: UIViewController {
         ])
 
         view.backgroundColor = .white
-        updateNavButton()
-    }
-
-    private func updateNavButton() {
-        if commutes.filter({ $0.isActive }).isEmpty {
-            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Start", style: .plain, target: self, action: #selector(startCommute))
-        } else {
-            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "End", style: .plain, target: self, action: #selector(endCommute))
-        }
-    }
-
-    @objc private func startCommute() {
-        eventHandler?.startCommute(for: self)
-        updateNavButton()
-        updateActiveCommuteTimer()
-    }
-
-    @objc private func endCommute() {
-        eventHandler?.endCommute(for: self)
-        updateNavButton()
-
-        updateActiveCommuteTimer()
     }
 
     private func updateActiveCommuteTimer() {
