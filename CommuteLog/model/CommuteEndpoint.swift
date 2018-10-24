@@ -14,14 +14,25 @@ struct CommuteEndPoint: Codable {
     var exitWindow: CommuteSchedule
     var location: Location
     var radius: Double
+    var isHome: Bool
+    var isWork: Bool { return !isHome }
+
+    var isActive: Bool {
+        return active(during: Date())
+    }
+
+    func active(during date: Date) -> Bool {
+        return entryWindow.contains(date) || exitWindow.contains(date)
+    }
 }
 
 extension CommuteEndPoint {
-    init(identifier: String, entryHours: Range<Int>, exitHours: Range<Int>, location: Location, radius: Double) {
+    init(identifier: String, entryHours: Range<Int>, exitHours: Range<Int>, location: Location, radius: Double, isHome: Bool) {
         self.identifier = identifier
         self.entryWindow = CommuteSchedule(hours: entryHours)
         self.exitWindow = CommuteSchedule(hours: exitHours)
         self.location = location
         self.radius = radius
+        self.isHome = isHome
     }
 }

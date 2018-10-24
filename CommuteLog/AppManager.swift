@@ -23,11 +23,7 @@ class AppManager: NSObject {
 
     override init() {
         self.commuteStore = UserDefaults.standard
-        self.commuteManager = CommuteManager(
-            store: commuteStore,
-            home: CommuteEndPoint(identifier: "home", entryHours: 16..<21, exitHours: 6..<10, location: Location(latitude: 45.446263, longitude: -122.587414), radius: 50),
-            work: CommuteEndPoint(identifier: "work", entryHours: 7..<11, exitHours: 15..<20, location: Location(latitude: 45.520645, longitude: -122.673128), radius: 50)
-        )
+        self.commuteManager = CommuteManager(store: commuteStore)
         self.window = UIWindow(frame: UIScreen.main.bounds)
         self.commuteViewController = CommutesViewController()
         self.nav = UINavigationController(rootViewController: commuteViewController)
@@ -82,7 +78,7 @@ extension AppManager: CommutesViewControllerEventHandler {
         if commuteManager.activeCommute != nil {
             commuteManager.endCommute(save: true)
         }
-        commuteManager.startCommute(from: commuteManager.home.exitWindow.contains(Date()) ? commuteManager.home : commuteManager.work)
+        commuteManager.startCommute()
     }
 
     func endCommute(for vc: CommutesViewController) {
