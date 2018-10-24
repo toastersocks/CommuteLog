@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import CoreLocation
 
 class AppManager: NSObject {
     var commuteStore: CommuteStore
@@ -93,14 +92,5 @@ extension AppManager: LocationWranglerDelegate {
         DispatchQueue.main.async {
             details.updateCommute(activeCommute)
         }
-    }
-}
-
-extension CommuteEndPoint {
-    var region: CLCircularRegion {
-        let region = CLCircularRegion(center: location.clCoordinate, radius: radius, identifier: identifier)
-        region.notifyOnEntry = true
-        region.notifyOnExit = true
-        return region
     }
 }

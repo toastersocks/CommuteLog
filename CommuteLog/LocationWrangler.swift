@@ -85,6 +85,15 @@ extension Location {
     var clCoordinate: CLLocationCoordinate2D { return CLLocationCoordinate2D(latitude: latitude, longitude: longitude) }
 }
 
+extension CommuteEndPoint {
+    var region: CLCircularRegion {
+        let region = CLCircularRegion(center: location.clCoordinate, radius: radius, identifier: identifier)
+        region.notifyOnEntry = true
+        region.notifyOnExit = true
+        return region
+    }
+}
+
 extension UIApplication.State: CustomStringConvertible {
     public var description: String {
         switch self {
