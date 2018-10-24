@@ -17,6 +17,9 @@ protocol CommuteStore {
     func delete(_ commute: Commute) -> Bool
     @discardableResult
     func delete(commuteIdentifier: String) -> Bool
+
+    func loadEndPoint(_ identifier: String) -> CommuteEndPoint?
+    func saveEndPoint(_ endPoint: CommuteEndPoint)
 }
 
 extension CommuteStore {
@@ -44,6 +47,14 @@ extension CommuteStore {
         save(commutes)
         return result != nil
     }
+
+    func loadHome() -> CommuteEndPoint? {
+        return loadEndPoint("home")
+    }
+
+    func loadWork() -> CommuteEndPoint? {
+        return loadEndPoint("work")
+    }
 }
 
 extension UserDefaults: CommuteStore {
@@ -58,5 +69,26 @@ extension UserDefaults: CommuteStore {
     func save(_ commutes: [String: Commute]) {
         let encoder = JSONEncoder()
         set(try! encoder.encode(commutes), forKey: "commutes")
+    }
+
+    func saveEndPoint(_ endPoint: CommuteEndPoint) {
+        let encoder = JSONEncoder()
+        do {
+            set(try encoder.encode(endPoint), forKey: "endPoints-\(endPoint.identifier)")
+        } catch {
+            Logger.error("Failed to encode endPoint `\(endPoint.identifier)`: \(error)")
+        }
+    }
+
+    func loadEndPoint(_ identifier: String) -> CommuteEndPoint? {
+        guard let data = data(forKey: "endPoints-\(identifier)") else { return nil }
+        do {
+            let decoder = JSONDecoder()
+            let endPoint = try decoder.decode(CommuteEndPoint.self, from: data)
+            return endPoint
+        } catch {
+            Logger.error("Failed to decode endPoint '\(identifier)': \(error)")
+            return nil
+        }
     }
 }

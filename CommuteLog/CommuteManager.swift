@@ -15,11 +15,33 @@ protocol CommuteDelegate: class {
 }
 
 class CommuteManager: NSObject {
+    private struct Schedule {
+        var home: CommuteEndPoint
+        var work: CommuteEndPoint
+
+        var regions: [CLRegion] {
+            return [home.region, work.region]
+        }
+
+        var isActive: Bool { return home.isActive || work.isActive }
+        var activeStartPoint: CommuteEndPoint? {
+            if home.isActive { return home }
+            if work.isActive { return work }
+            return nil
+        }
+        var activeEndPoint: CommuteEndPoint? {
+            guard let start = activeStartPoint else { return nil }
+            return start.isHome ? work : home
+        }
+
+        func endpoint(_ identifier: String) -> CommuteEndPoint? {
+            return [home, work].filter({ $0.identifier == identifier }).first
+        }
+    }
     private var store: CommuteStore
     weak var delegate: CommuteDelegate?
 
-    var home: CommuteEndPoint
-    var work: CommuteEndPoint
+    private var schedule: Schedule?
 
     var locationManager: CLLocationManager
 
@@ -31,10 +53,11 @@ class CommuteManager: NSObject {
         return _cachedActiveCommute
     }
 
-    init(store: CommuteStore, home: CommuteEndPoint, work: CommuteEndPoint) {
+    init(store: CommuteStore) {
         self.store = store
-        self.home = home
-        self.work = work
+        if let home = store.loadHome(), let work = store.loadWork() {
+            schedule = Schedule(home: home, work: work)
+        }
         self.locationManager = CLLocationManager()
         super.init()
 
@@ -46,13 +69,17 @@ class CommuteManager: NSObject {
         locationManager.delegate = self
         locationManager.requestAlwaysAuthorization()
 
-        for endpoint in [home, work] {
-            locationManager.startMonitoring(for: endpoint.region)
+        for region in schedule?.regions ?? [] {
+            locationManager.startMonitoring(for: region)
         }
     }
 
     func enteredRegion(_ identifier: String, at date: Date = Date()) {
-        let endpoint = identifier == home.identifier ? home : work
+        guard let endpoint = schedule?.endpoint(identifier) else {
+            Logger.warning("Received region entrance '\(identifier)' before endPoints have been set up.")
+            return
+        }
+
         guard endpoint.entryWindow.contains(date) else {
             Logger.debug("Ignoring inactive region.")
             return
@@ -64,17 +91,20 @@ class CommuteManager: NSObject {
     func exitedRegion(_ identifier: String, at date: Date = Date()) {
         guard activeCommute == nil else { return }
 
-        let endpoint = identifier == home.identifier ? home : work
-        guard endpoint.exitWindow.contains(date) else {
+        guard let endpoint = schedule?.endpoint(identifier), endpoint.exitWindow.contains(date) else {
             Logger.debug("Ignoring inactive region.")
             return
         }
 
-        startCommute(from: endpoint)
+        startCommute()
     }
 
-    func startCommute(from endpoint: CommuteEndPoint) {
-        let commute = Commute(start: Date(), from: endpoint, to: endpoint.identifier == home.identifier ? work : home)
+    func startCommute() {
+        guard let startPoint = schedule?.activeStartPoint,
+            let endPoint = schedule?.activeEndPoint
+            else { return }
+
+        let commute = Commute(start: Date(), from: startPoint, to: endPoint)
         _cachedActiveCommute = commute
         store.save(commute)
         Logger.debug("Created new Commute and saved as active.")
