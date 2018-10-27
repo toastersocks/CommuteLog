@@ -20,6 +20,9 @@ protocol CommuteStore {
 
     func loadEndPoint(_ identifier: String) -> CommuteEndPoint?
     func saveEndPoint(_ endPoint: CommuteEndPoint)
+
+    var defaultHome: CommuteEndPoint { get }
+    var defaultWork: CommuteEndPoint { get }
 }
 
 extension CommuteStore {
@@ -48,12 +51,32 @@ extension CommuteStore {
         return result != nil
     }
 
-    func loadHome() -> CommuteEndPoint? {
-        return loadEndPoint("home")
+    var defaultHome: CommuteEndPoint {
+        return CommuteEndPoint(
+            identifier: CommuteEndPoint.homeIdentifier,
+            entryHours: 17..<22,
+            exitHours: 5..<10,
+            location: Location(latitude: 45.5085273, longitude: -122.6538027),
+            radius: 50
+        )
     }
 
-    func loadWork() -> CommuteEndPoint? {
-        return loadEndPoint("work")
+    func loadHome() -> CommuteEndPoint {
+        return loadEndPoint(CommuteEndPoint.homeIdentifier) ?? defaultHome
+    }
+
+    var defaultWork: CommuteEndPoint {
+        return CommuteEndPoint(
+            identifier: CommuteEndPoint.workIdentifier,
+            entryHours: 6..<11,
+            exitHours: 16..<21,
+            location: Location(latitude: 45.5167522, longitude: -122.6792086),
+            radius: 50
+        )
+    }
+
+    func loadWork() -> CommuteEndPoint {
+        return loadEndPoint(CommuteEndPoint.workIdentifier) ?? defaultWork
     }
 }
 

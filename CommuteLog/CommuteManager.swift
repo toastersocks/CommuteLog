@@ -71,20 +71,20 @@ class CommuteManager: NSObject {
             return
         }
 
-        startCommute()
+        startCommute(at: date)
     }
 
-    func startCommute(force: Bool = false) {
+    func startCommute(force: Bool = false, at date: Date = Date()) {
         let startPoint: CommuteEndPoint
         let endPoint: CommuteEndPoint
-        if let start = schedule?.activeStartPoint, let end = schedule?.activeEndPoint {
+        if let start = schedule?.activeStartPoint(during: date), let end = schedule?.activeEndPoint(during: date) {
             startPoint = start
             endPoint = end
         } else {
             guard force, let schedule = self.schedule else { return }
 
             #warning("TODO: This picks the most likely starting point based on the time of day. It _should_ be picking based on location, but that's harder.")
-            let hour = Calendar.current.component(.hour, from: Date())
+            let hour = Calendar.current.component(.hour, from: date)
             if schedule.home.exitWindow.hours.contains(hour) {
                 startPoint = schedule.home
                 endPoint = schedule.work
@@ -156,14 +156,14 @@ extension CommuteManager {
             return [home.region, work.region]
         }
 
-        var isActive: Bool { return home.isActive || work.isActive }
-        var activeStartPoint: CommuteEndPoint? {
-            if home.isActive { return home }
-            if work.isActive { return work }
+        func isActive(during date: Date = Date()) -> Bool { return home.isActive (during: date) || work.isActive(during: date) }
+        func activeStartPoint(during date: Date = Date()) -> CommuteEndPoint? {
+            if home.isActive(during: date) { return home }
+            if work.isActive(during: date) { return work }
             return nil
         }
-        var activeEndPoint: CommuteEndPoint? {
-            guard let start = activeStartPoint else { return nil }
+        func activeEndPoint(during date: Date = Date()) -> CommuteEndPoint? {
+            guard let start = activeStartPoint(during: date) else { return nil }
             return start.isHome ? work : home
         }
 
@@ -175,9 +175,6 @@ extension CommuteManager {
 
 extension CommuteStore {
     fileprivate func loadSchedule() -> CommuteManager.Schedule? {
-        #warning("TODO: This is using my house and work as a default, just to keep it working until I get the UI added in for modifying it in the app. Once that feature is complete these defaults should be removed.")
-        let home = loadHome() ?? CommuteEndPoint(identifier: "home", entryHours: 16..<21, exitHours: 6..<10, location: Location(latitude: 45.446263, longitude: -122.587414), radius: 50, isHome: true)
-        let work = loadWork() ?? CommuteEndPoint(identifier: "work", entryHours: 7..<11, exitHours: 15..<20, location: Location(latitude: 45.520645, longitude: -122.673128), radius: 50, isHome: false)
-        return CommuteManager.Schedule(home: home, work: work)
+        return CommuteManager.Schedule(home: loadHome(), work: loadWork())
     }
 }
