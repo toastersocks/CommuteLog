@@ -69,6 +69,7 @@ extension AppManager: CommuteDelegate {
 extension AppManager: CommutesViewControllerEventHandler {
     func commutesViewController(_ vc: CommutesViewController, didSelect commute: Commute) {
         let details = CommuteDetailsViewController(commute: commute, locationStore: locationWrangler.store)
+        details.eventHandler = self
         nav.pushViewController(details, animated: true)
     }
 
@@ -87,6 +88,13 @@ extension AppManager: CommutesViewControllerEventHandler {
 
     func endCommute(for vc: CommutesViewController) {
         commuteManager.endCommute(save: true)
+    }
+}
+
+extension AppManager: CommuteDetailsViewControllerEventHandler {
+    func endCommute(for vc: CommuteDetailsViewController) {
+        commuteManager.endCommute(save: true)
+        vc.commute.end = Date()
     }
 }
 
