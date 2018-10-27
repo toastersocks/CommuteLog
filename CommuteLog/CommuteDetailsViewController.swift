@@ -9,9 +9,14 @@
 import UIKit
 import MapKit
 
+protocol CommuteDetailsViewControllerEventHandler: class {
+    func endCommute(for vc: CommuteDetailsViewController)
+}
+
 class CommuteDetailsViewController: UIViewController {
     let mapView = MKMapView(frame: .zero)
     let formatter: DateFormatter = DateFormatter()
+    weak var eventHandler: CommuteDetailsViewControllerEventHandler?
 
     private(set) var commute: Commute
     private let locationStore: LocationStore
@@ -41,6 +46,7 @@ class CommuteDetailsViewController: UIViewController {
         view.backgroundColor = .white
 
         updateLabels()
+        updateNavButton()
         let labels = UIStackView(arrangedSubviews: [startLabel, endLabel])
         labels.alignment = .fill
         labels.axis = .vertical
@@ -89,6 +95,7 @@ class CommuteDetailsViewController: UIViewController {
         commute = newCommute
 
         updateLabels()
+        updateNavButton()
     }
 
     private func addAnnotation(for location: Location) {
@@ -120,6 +127,20 @@ class CommuteDetailsViewController: UIViewController {
             endText = "---"
         }
         endLabel.text = "End:   \(endText)"
+    }
+
+    private func updateNavButton() {
+        if commute.isActive {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "End", style: .plain, target: self, action: #selector(endCommute))
+        } else {
+            navigationItem.rightBarButtonItem = nil
+        }
+    }
+
+    @objc private func endCommute() {
+        eventHandler?.endCommute(for: self)
+        updateNavButton()
+        updateLabels()
     }
 }
 
