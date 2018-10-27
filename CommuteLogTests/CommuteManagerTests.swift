@@ -12,95 +12,97 @@ import XCTest
 
 class CommuteManagerTests: XCTestCase {
     private var store: MockCommuteStore!
-    var home = CommuteEndPoint(identifier: "home", entryHours: 6..<10, exitHours: 16..<20, location: Location(latitude: 0, longitude: 0), radius: 10)
-    var work = CommuteEndPoint(identifier: "work", entryHours: 7..<11, exitHours: 15..<19, location: Location(latitude: 100, longitude: 100), radius: 10)
+    var home = CommuteEndPoint(identifier: CommuteEndPoint.homeIdentifier, entryHours: 6..<10, exitHours: 16..<20, location: Location(latitude: 0, longitude: 0), radius: 10)
+    var work = CommuteEndPoint(identifier: CommuteEndPoint.workIdentifier, entryHours: 7..<11, exitHours: 15..<19, location: Location(latitude: 100, longitude: 100), radius: 10)
     var manager: CommuteManager!
 
     override func setUp() {
         super.setUp()
 
         store = MockCommuteStore()
-        manager = CommuteManager(store: store, home: home, work: work)
+        store.saveEndPoint(home)
+        store.saveEndPoint(work)
+        manager = CommuteManager(store: store)
     }
 
     func testEnteredRegion_endsHomeCommute() {
         var entryDate = Calendar.current.date(bySetting: .weekdayOrdinal, value: 3, of: Date())!
-        entryDate = Calendar.current.date(bySetting: .hour, value: manager.home.entryWindow.startHour + 1, of: entryDate)!
+        entryDate = Calendar.current.date(bySetting: .hour, value: home.entryWindow.startHour + 1, of: entryDate)!
 
-        manager.startCommute(from: manager.work)
+        manager.startCommute(force: true)
         XCTAssertNotNil(manager.activeCommute)
-        manager.enteredRegion("home", at: entryDate)
+        manager.enteredRegion(CommuteEndPoint.homeIdentifier, at: entryDate)
         XCTAssertNil(manager.activeCommute)
     }
 
     func testEnteredRegion_endsWorkCommute() {
         var entryDate = Calendar.current.date(bySetting: .weekdayOrdinal, value: 3, of: Date())!
-        entryDate = Calendar.current.date(bySetting: .hour, value: manager.work.entryWindow.startHour + 1, of: entryDate)!
+        entryDate = Calendar.current.date(bySetting: .hour, value: work.entryWindow.startHour + 1, of: entryDate)!
 
-        manager.startCommute(from: manager.home)
+        manager.startCommute(force: true)
         XCTAssertNotNil(manager.activeCommute)
-        manager.enteredRegion("work", at: entryDate)
+        manager.enteredRegion(CommuteEndPoint.workIdentifier, at: entryDate)
         XCTAssertNil(manager.activeCommute)
     }
 
     func testEnteredRegion_ignoresInactiveRegion() {
         var entryDate = Calendar.current.date(bySetting: .weekdayOrdinal, value: 3, of: Date())!
-        entryDate = Calendar.current.date(bySetting: .hour, value: manager.home.entryWindow.startHour - 1, of: entryDate)!
+        entryDate = Calendar.current.date(bySetting: .hour, value: home.entryWindow.startHour - 1, of: entryDate)!
 
-        manager.startCommute(from: manager.work)
+        manager.startCommute(force: true)
         XCTAssertNotNil(manager.activeCommute)
-        manager.enteredRegion("home", at: entryDate)
+        manager.enteredRegion(CommuteEndPoint.homeIdentifier, at: entryDate)
         XCTAssertNotNil(manager.activeCommute)
     }
 
     func testExitedRegion_startsHomeCommute() {
         var exitDate = Calendar.current.date(bySetting: .weekdayOrdinal, value: 3, of: Date())!
-        exitDate = Calendar.current.date(bySetting: .hour, value: manager.home.exitWindow.startHour + 1, of: exitDate)!
+        exitDate = Calendar.current.date(bySetting: .hour, value: home.exitWindow.startHour + 1, of: exitDate)!
 
         XCTAssertNil(manager.activeCommute)
-        manager.exitedRegion("home", at: exitDate)
+        manager.exitedRegion(CommuteEndPoint.homeIdentifier, at: exitDate)
         XCTAssertNotNil(manager.activeCommute)
     }
 
     func testExitedRegion_startsWorkCommute() {
         var exitDate = Calendar.current.date(bySetting: .weekdayOrdinal, value: 3, of: Date())!
-        exitDate = Calendar.current.date(bySetting: .hour, value: manager.work.exitWindow.startHour + 1, of: exitDate)!
+        exitDate = Calendar.current.date(bySetting: .hour, value: work.exitWindow.startHour + 1, of: exitDate)!
 
         XCTAssertNil(manager.activeCommute)
-        manager.exitedRegion("work", at: exitDate)
+        manager.exitedRegion(CommuteEndPoint.workIdentifier, at: exitDate)
         XCTAssertNotNil(manager.activeCommute)
     }
 
     func testExitedRegion_ignoresInactiveRegion() {
         var exitDate = Calendar.current.date(bySetting: .weekdayOrdinal, value: 3, of: Date())!
-        exitDate = Calendar.current.date(bySetting: .hour, value: manager.work.exitWindow.startHour - 1, of: exitDate)!
+        exitDate = Calendar.current.date(bySetting: .hour, value: work.exitWindow.startHour - 1, of: exitDate)!
 
         XCTAssertNil(manager.activeCommute)
-        manager.exitedRegion("work", at: exitDate)
+        manager.exitedRegion(CommuteEndPoint.workIdentifier, at: exitDate)
         XCTAssertNil(manager.activeCommute)
     }
 
     func testExitedRegion_ignoresRegionCrossing_whenAlreadyTrackingCommute() {
         var exitDate = Calendar.current.date(bySetting: .weekdayOrdinal, value: 3, of: Date())!
-        exitDate = Calendar.current.date(bySetting: .hour, value: manager.home.exitWindow.startHour + 1, of: exitDate)!
+        exitDate = Calendar.current.date(bySetting: .hour, value: home.exitWindow.startHour + 1, of: exitDate)!
 
         let commute = Commute(identifier: "test", start: Date(timeIntervalSinceNow: -120), from: home, to: work)
         store.commutes["active"] = commute
         XCTAssertEqual(manager.activeCommute?.identifier, commute.identifier)
 
-        manager.exitedRegion("home", at: exitDate)
+        manager.exitedRegion(CommuteEndPoint.homeIdentifier, at: exitDate)
         XCTAssertEqual(manager.activeCommute?.identifier, commute.identifier)
     }
 
     func testStartCommute_setsActiveCommute() {
         XCTAssertNil(manager.activeCommute)
-        manager.startCommute(from: home)
+        manager.startCommute(force: true)
         XCTAssertNotNil(manager.activeCommute)
     }
 
     func testStartCommute_createsCommuteInStore() {
         XCTAssertNil(store.commute(identifier: "active"))
-        manager.startCommute(from: home)
+        manager.startCommute(force: true)
         XCTAssertNotNil(store.commute(identifier: "active"))
     }
 
@@ -112,7 +114,7 @@ class CommuteManagerTests: XCTestCase {
     }
 
     func testEndCommute_savesCommuteWithEndDate() {
-        manager.startCommute(from: home)
+        manager.startCommute(force: true)
         XCTAssertNotNil(store.commutes["active"])
         let commute = store.commutes["active"]!
         XCTAssertNil(commute.end)
@@ -171,6 +173,15 @@ class CommuteManagerTests: XCTestCase {
 }
 
 private class MockCommuteStore: CommuteStore {
+    var endPoints: [String: CommuteEndPoint] = [:]
+    func loadEndPoint(_ identifier: String) -> CommuteEndPoint? {
+        return endPoints[identifier]
+    }
+
+    func saveEndPoint(_ endPoint: CommuteEndPoint) {
+        endPoints[endPoint.identifier] = endPoint
+    }
+
     var commutes: [String: Commute]
 
     init(commutes: [String: Commute] = [:]) {
