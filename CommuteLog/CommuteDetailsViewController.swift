@@ -9,9 +9,14 @@
 import UIKit
 import MapKit
 
+protocol CommuteDetailsViewControllerEventHandler: class {
+    func endCommute(for vc: CommuteDetailsViewController)
+}
+
 class CommuteDetailsViewController: UIViewController {
     let mapView = MKMapView(frame: .zero)
     let formatter: DateFormatter = DateFormatter()
+    weak var eventHandler: CommuteDetailsViewControllerEventHandler?
 
     private(set) var commute: Commute
     private let locationStore: LocationStore
@@ -35,12 +40,10 @@ class CommuteDetailsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-
         view.backgroundColor = .white
 
         updateLabels()
+        updateNavButton()
         let labels = UIStackView(arrangedSubviews: [startLabel, endLabel])
         labels.alignment = .fill
         labels.axis = .vertical
@@ -59,8 +62,6 @@ class CommuteDetailsViewController: UIViewController {
         mapView.translatesAutoresizingMaskIntoConstraints = false
         mapView.showsUserLocation = true
         mapView.delegate = self
-        formatter.timeStyle = .long
-        formatter.dateStyle = .none
 
         [commute.startPoint, commute.endPoint].forEach(addAnnotation(for:))
         locations = locationStore.locations(for: commute)
@@ -89,12 +90,13 @@ class CommuteDetailsViewController: UIViewController {
         commute = newCommute
 
         updateLabels()
+        updateNavButton()
     }
 
     private func addAnnotation(for location: Location) {
         let annotation = MKPointAnnotation()
         annotation.coordinate = location.clCoordinate
-        annotation.title = formatter.string(from: location.timestamp)
+        annotation.title = annotationStyleString(from: location.timestamp)
         mapView.addAnnotation(annotation)
     }
 
@@ -111,15 +113,29 @@ class CommuteDetailsViewController: UIViewController {
     }
 
     private func updateLabels() {
-        startLabel.text = "Start: \(formatter.string(from: commute.start))"
+        startLabel.text = "Start: \(labelStyleString(from: commute.start))"
 
         let endText: String
         if let end = commute.end {
-            endText = formatter.string(from: end)
+            endText = labelStyleString(from: end)
         } else {
             endText = "---"
         }
         endLabel.text = "End:   \(endText)"
+    }
+
+    private func updateNavButton() {
+        if commute.isActive {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "End", style: .plain, target: self, action: #selector(endCommute))
+        } else {
+            navigationItem.rightBarButtonItem = nil
+        }
+    }
+
+    @objc private func endCommute() {
+        eventHandler?.endCommute(for: self)
+        updateNavButton()
+        updateLabels()
     }
 }
 
@@ -155,5 +171,32 @@ extension CommuteDetailsViewController: MKMapViewDelegate {
         } else {
             return MKPolylineRenderer()
         }
+    }
+}
+
+extension CommuteDetailsViewController {
+    func annotationStyleString(from date: Date) -> String {
+        let originalTimeStyle = formatter.timeStyle
+        let originalDateStyle = formatter.dateStyle
+        formatter.timeStyle = .long
+        formatter.dateStyle = .none
+        defer {
+            formatter.timeStyle = originalTimeStyle
+            formatter.dateStyle = originalDateStyle
+        }
+        return formatter.string(from: date)
+    }
+
+    func labelStyleString(from date: Date) -> String {
+        let originalTimeStyle = formatter.timeStyle
+        let originalDateStyle = formatter.dateStyle
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        defer {
+            formatter.timeStyle = originalTimeStyle
+            formatter.dateStyle = originalDateStyle
+        }
+
+        return formatter.string(from: date)
     }
 }
