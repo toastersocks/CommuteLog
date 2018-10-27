@@ -20,6 +20,9 @@ class AppManager: NSObject {
         return nav.topViewController as? CommuteDetailsViewController
     }
 
+    private var startButton: UIBarButtonItem!
+    private var endButton: UIBarButtonItem!
+
     override init() {
         self.commuteStore = UserDefaults.standard
         self.commuteManager = CommuteManager(store: commuteStore)
@@ -32,6 +35,10 @@ class AppManager: NSObject {
         
         locationWrangler.delegate = self
         commuteManager.delegate = self
+
+        self.startButton = UIBarButtonItem(title: "Start", style: .plain, target: self, action: #selector(startCommute))
+        self.endButton = UIBarButtonItem(title: "End", style: .plain, target: self, action: #selector(endCommute))
+
     }
 
     func startUp() {
@@ -49,10 +56,10 @@ class AppManager: NSObject {
     }
 
     private func updateStartStopButton() {
-        if commuteViewController.commutes.filter({ $0.isActive }).isEmpty {
-            commuteViewController.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Start", style: .plain, target: self, action: #selector(startCommute))
+        if commuteStore.loadCommutes().values.filter({ $0.isActive }).isEmpty {
+            commuteViewController.navigationItem.rightBarButtonItem = startButton
         } else {
-            commuteViewController.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "End", style: .plain, target: self, action: #selector(endCommute))
+            commuteViewController.navigationItem.rightBarButtonItem = endButton
         }
     }
 
@@ -81,27 +88,26 @@ extension AppManager: CommuteDelegate {
         Logger.debug("Stopping location tracking due to commute end.")
         locationWrangler.stopTracking(save: true)
         updateStartStopButton()
+        if endedCommute.identifier == detailsViewController?.commute.identifier {
+            detailsViewController?.navigationItem.rightBarButtonItem = nil
+            detailsViewController?.updateCommute(endedCommute)
+        }
     }
 }
 
 extension AppManager: CommutesViewControllerEventHandler {
     func commutesViewController(_ vc: CommutesViewController, didSelect commute: Commute) {
         let details = CommuteDetailsViewController(commute: commute, locationStore: locationWrangler.store)
-        details.eventHandler = self
         nav.pushViewController(details, animated: true)
+        if commute.isActive {
+            details.navigationItem.rightBarButtonItem = endButton
+        }
     }
 
     func commutesViewController(_ vc: CommutesViewController, didDelete commute: Commute) {
         commuteManager.delete(commute)
         
         commuteViewController.commutes = commuteManager.fetchCommutes()
-    }
-}
-
-extension AppManager: CommuteDetailsViewControllerEventHandler {
-    func endCommute(for vc: CommuteDetailsViewController) {
-        commuteManager.endCommute(save: true)
-        vc.commute.end = Date()
     }
 }
 
