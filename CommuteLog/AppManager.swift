@@ -43,7 +43,7 @@ class AppManager: NSObject {
         window.rootViewController = nav
         window.makeKeyAndVisible()
 
-        commuteViewController.commutes = commuteManager.fetchCommutes()
+        commuteViewController.commutes = commuteManager.fetchCommutes().sorted(by: { $0.start > $1.start })
         commuteViewController.eventHandler = self
 
         if let _ = commuteManager.activeCommute {
