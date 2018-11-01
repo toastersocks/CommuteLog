@@ -158,9 +158,9 @@ extension CommutesViewController: UITableViewDelegate {
         activeCommuteTimer?.invalidate()
         activeCommuteTimer = nil
     }
-    
+
     func tableView(_ tableView: UITableView, didEndEditingRowAt indexPath: IndexPath?) {
         updateActiveCommuteTimer()
-        }
+    }
 }
 
