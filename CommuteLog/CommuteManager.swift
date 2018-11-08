@@ -99,8 +99,10 @@ class CommuteManager: NSObject {
         return store.delete(commute)
     }
 
-    func fetchCommutes() -> [Commute] {
-        return store.loadCommutes().values.sorted(by: { $0.start > $1.start })
+    func fetchCommutes(for schedule: CommuteSchedule = CommuteSchedule(hours: 0..<24), ascending: Bool = false) -> [Commute] {
+        return store.loadCommutes().values
+            .filter({ schedule.contains($0.start) })
+            .sorted(by: { ($0.start < $1.start) == ascending })
     }
 }
 

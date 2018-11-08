@@ -43,24 +43,33 @@ class AppManager: NSObject {
         window.rootViewController = nav
         window.makeKeyAndVisible()
 
-        commuteViewController.commutes = commuteManager.fetchCommutes()
+        updateCommutes()
         commuteViewController.eventHandler = self
 
         if let _ = commuteManager.activeCommute {
             locationWrangler.startTracking()
         }
     }
+
+    func updateCommutes() {
+        commuteViewController.updateTable(
+            Table(
+                Section("To Work") { commuteManager.fetchCommutes(for: CommuteSchedule(hours: 0..<12)) },
+                Section("Home") { commuteManager.fetchCommutes(for: CommuteSchedule(hours: 12..<24)) }
+            )
+        )
+    }
 }
 
 extension AppManager: CommuteDelegate {
     func commuteManager(_ manager: CommuteManager, startedCommute: Commute) {
-        commuteViewController.commutes = manager.fetchCommutes()
+        updateCommutes()
         Logger.debug("Starting location tracking for commute.")
         locationWrangler.startTracking()
     }
 
     func commuteManager(_ manager: CommuteManager, endedCommute: Commute) {
-        commuteViewController.commutes = manager.fetchCommutes()
+        updateCommutes()
         Logger.debug("Stopping location tracking due to commute end.")
         locationWrangler.stopTracking(save: true)
     }
@@ -75,8 +84,7 @@ extension AppManager: CommutesViewControllerEventHandler {
 
     func commutesViewController(_ vc: CommutesViewController, didDelete commute: Commute) {
         commuteManager.delete(commute)
-        
-        commuteViewController.commutes = commuteManager.fetchCommutes()
+        updateCommutes()
     }
     
     func startCommute(for vc: CommutesViewController) {

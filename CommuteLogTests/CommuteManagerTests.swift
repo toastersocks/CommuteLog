@@ -148,10 +148,32 @@ class CommuteManagerTests: XCTestCase {
             "c": Commute(identifier: "c", start: Date(timeIntervalSinceNow: -180), from: home, to: work)
         ]
 
-        let commutes = manager.fetchCommutes()
-        XCTAssertEqual(commutes[0].identifier, "a")
-        XCTAssertEqual(commutes[1].identifier, "c")
-        XCTAssertEqual(commutes[2].identifier, "b")
+        let commutesDescending = manager.fetchCommutes()
+        XCTAssertEqual(commutesDescending[0].identifier, "a")
+        XCTAssertEqual(commutesDescending[1].identifier, "c")
+        XCTAssertEqual(commutesDescending[2].identifier, "b")
+
+        let commutesAscending = manager.fetchCommutes(ascending: true)
+        XCTAssertEqual(commutesAscending[0].identifier, "b")
+        XCTAssertEqual(commutesAscending[1].identifier, "c")
+        XCTAssertEqual(commutesAscending[2].identifier, "a")
+    }
+
+    func testFetchCommutes_fetchAllAndOnlyCommutesWithinCommuteSchedule() {
+        let hourInterval = TimeInterval(60*60)
+        guard let referenceDate = DateComponents(calendar: .current, timeZone: .current, year: 2018, month: 1, day: 1, hour: 0).date else { fatalError("Couldn't create date from given components") }
+        store.commutes = [
+            "a": Commute(identifier: "a", start: referenceDate.addingTimeInterval(7.0 * hourInterval), from: home, to: work),
+            "b": Commute(identifier: "b", start: referenceDate.addingTimeInterval(8.0 * hourInterval), from: home, to: work),
+            "c": Commute(identifier: "c", start: referenceDate.addingTimeInterval(9.0 * hourInterval), from: home, to: work),
+            "d": Commute(identifier: "d", start: referenceDate.addingTimeInterval(10.0 * hourInterval), from: home, to: work)
+        ]
+        
+        let commutes = manager.fetchCommutes(for: CommuteSchedule(hours: 8..<10))
+        XCTAssertTrue(commutes.contains { $0.identifier == "b" })
+        XCTAssertTrue(commutes.contains { $0.identifier == "c" })
+        XCTAssertFalse(commutes.contains { $0.identifier == "a" })
+        XCTAssertFalse(commutes.contains { $0.identifier == "d" })
     }
 
     func testActiveCommute_loadsMostRecentCommuteWithoutAnEnd() {

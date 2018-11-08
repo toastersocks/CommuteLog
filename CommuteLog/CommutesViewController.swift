@@ -22,7 +22,11 @@ class CommutesViewController: UIViewController {
 
     private var activeCommuteTimer: Timer?
 
-    var commutes: [Commute] {
+    private var commutes: [Commute] {
+        return table.allItems
+    }
+
+    private var table: Table<Commute> {
         didSet {
             DispatchQueue.main.async {
                 self.tableView.reloadData()
@@ -31,9 +35,9 @@ class CommutesViewController: UIViewController {
         }
     }
 
-    init(commutes: [Commute] = [], eventHandler: CommutesViewControllerEventHandler? = nil) {
+    init(table: Table<Commute> = Table(), eventHandler: CommutesViewControllerEventHandler? = nil) {
         tableView = UITableView(frame: .zero)
-        self.commutes = commutes
+        self.table = table
         self.eventHandler = eventHandler
         self.formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -71,6 +75,10 @@ class CommutesViewController: UIViewController {
         }
     }
 
+    func updateTable(_ table: Table<Commute>) {
+        self.table = table
+    }
+
     @objc private func startCommute() {
         eventHandler?.startCommute(for: self)
         updateNavButton()
@@ -85,9 +93,13 @@ class CommutesViewController: UIViewController {
     }
 
     private func updateActiveCommuteTimer() {
-        let activeCommutePaths: [IndexPath] = commutes.enumerated().compactMap { c in
-            guard c.element.isActive else { return nil }
-            return IndexPath(row: c.offset, section: 0)
+        var activeCommutePaths: [IndexPath] = []
+
+        for (sectionOffset, section) in table.sections.enumerated() {
+            for (commuteOffset, commute) in section.items.enumerated()
+                where commute.isActive {
+                    activeCommutePaths.append(IndexPath(item: commuteOffset, section: sectionOffset))
+            }
         }
 
         activeCommuteTimer?.invalidate()
@@ -116,12 +128,20 @@ class CommutesViewController: UIViewController {
 
 extension CommutesViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return commutes.count
+        return table[section].items.count
+    }
+
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return table.sections.count
+    }
+
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return table[section].title
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
-        let commute = commutes[indexPath.item]
+        let commute = table[indexPath.section].items[indexPath.item]
         cell.textLabel?.text = "\(formatter.string(from: commute.start)) - \(String(format: "%0.1f min", commute.duration.duration / 60))"
         cell.detailTextLabel?.text = commute.description
         if commute.isActive {
@@ -135,11 +155,11 @@ extension CommutesViewController: UITableViewDataSource {
 
 extension CommutesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        eventHandler?.commutesViewController(self, didSelect: commutes[indexPath.item])
+        eventHandler?.commutesViewController(self, didSelect: table[indexPath.section].items[indexPath.item])
     }
 
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return !commutes[indexPath.item].isActive
+        return !table[indexPath.section].items[indexPath.item].isActive
     }
 
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
@@ -149,7 +169,7 @@ extension CommutesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         switch editingStyle {
         case .delete:
-            eventHandler?.commutesViewController(self, didDelete: commutes[indexPath.item])
+            eventHandler?.commutesViewController(self, didDelete: table[indexPath.section].items[indexPath.item])
         default: break
         }
     }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DDDF8BC42194E1A8008E8EBF /* Table+Section.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDF8BC32194E1A8008E8EBF /* Table+Section.swift */; };
 		F90062F42146269600036AFF /* CommuteEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = F90062F32146269600036AFF /* CommuteEndpoint.swift */; };
 		F90062F6214626CF00036AFF /* CommuteSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = F90062F5214626CF00036AFF /* CommuteSchedule.swift */; };
 		F906A23521474702007097F5 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F906A23421474702007097F5 /* Logger.swift */; };
@@ -37,6 +38,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DDDF8BC32194E1A8008E8EBF /* Table+Section.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Table+Section.swift"; sourceTree = "<group>"; };
 		F90062F32146269600036AFF /* CommuteEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommuteEndpoint.swift; sourceTree = "<group>"; };
 		F90062F5214626CF00036AFF /* CommuteSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommuteSchedule.swift; sourceTree = "<group>"; };
 		F906A23421474702007097F5 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
@@ -125,6 +127,7 @@
 				F98F76CF2129B656000AFF7B /* CommuteManager.swift */,
 				F98F768221292178000AFF7B /* CommutesViewController.swift */,
 				F9A5ED50213F6224006F8681 /* CommuteDetailsViewController.swift */,
+				DDDF8BC32194E1A8008E8EBF /* Table+Section.swift */,
 				F98F76872129217B000AFF7B /* Assets.xcassets */,
 				F98F76892129217B000AFF7B /* LaunchScreen.storyboard */,
 				F98F768C2129217B000AFF7B /* Info.plist */,
@@ -269,6 +272,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DDDF8BC42194E1A8008E8EBF /* Table+Section.swift in Sources */,
 				F98F76D02129B656000AFF7B /* CommuteManager.swift in Sources */,
 				F906A23521474702007097F5 /* Logger.swift in Sources */,
 				F90062F6214626CF00036AFF /* CommuteSchedule.swift in Sources */,
