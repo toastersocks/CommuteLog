@@ -65,13 +65,12 @@ class CommutesViewController: UIViewController {
             return IndexPath(row: c.offset, section: 0)
         }
 
-        if activeCommutePaths.isEmpty {
-            activeCommuteTimer?.invalidate()
-            activeCommuteTimer = nil
-        } else {
-            activeCommuteTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-                self.tableView.reloadRows(at: activeCommutePaths, with: .none)
-            }
+        activeCommuteTimer?.invalidate()
+        activeCommuteTimer = nil
+        if activeCommutePaths.isEmpty { return }
+
+        activeCommuteTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            self.tableView.reloadRows(at: activeCommutePaths, with: .none)
         }
     }
 
@@ -85,7 +84,8 @@ class CommutesViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
-        updateActiveCommuteTimer()
+        activeCommuteTimer?.invalidate()
+        activeCommuteTimer = nil
     }
 }
 
@@ -127,6 +127,15 @@ extension CommutesViewController: UITableViewDelegate {
             eventHandler?.commutesViewController(self, didDelete: commutes[indexPath.item])
         default: break
         }
+    }
+
+    func tableView(_ tableView: UITableView, willBeginEditingRowAt indexPath: IndexPath) {
+        activeCommuteTimer?.invalidate()
+        activeCommuteTimer = nil
+    }
+
+    func tableView(_ tableView: UITableView, didEndEditingRowAt indexPath: IndexPath?) {
+        updateActiveCommuteTimer()
     }
 }
 

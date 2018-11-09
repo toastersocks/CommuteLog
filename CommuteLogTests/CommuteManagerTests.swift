@@ -151,9 +151,9 @@ class CommuteManagerTests: XCTestCase {
         ]
 
         let commutes = manager.fetchCommutes()
-        XCTAssertEqual(commutes[0].identifier, "b")
+        XCTAssertEqual(commutes[0].identifier, "a")
         XCTAssertEqual(commutes[1].identifier, "c")
-        XCTAssertEqual(commutes[2].identifier, "a")
+        XCTAssertEqual(commutes[2].identifier, "b")
     }
 
     func testActiveCommute_loadsMostRecentCommuteWithoutAnEnd() {

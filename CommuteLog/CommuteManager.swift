@@ -131,7 +131,7 @@ class CommuteManager: NSObject {
     }
 
     func fetchCommutes() -> [Commute] {
-        return store.loadCommutes().values.sorted(by: { $0.start < $1.start })
+        return store.loadCommutes().values.sorted(by: { $0.start > $1.start })
     }
 }
 
